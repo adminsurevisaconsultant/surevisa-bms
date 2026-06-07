@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mian Blocks Factory – BMS</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#f5f6fa;--card:#fff;--text:#0f172a;--muted:#64748b;
+    --border:#e2e8f0;--primary:#d97706;--primary-dark:#b45309;
+    --success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#0ea5e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* TOP NAVBAR */
+  #topbar{position:fixed;top:0;left:0;right:0;height:64px;background:linear-gradient(135deg,#b45309,#d97706);
+    display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:1000;
+    box-shadow:0 2px 10px rgba(217,119,6,.2)}
+  .brand{color:#fff;font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:10px}
+  .brand .badge-biz{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .top-btn{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;
+    padding:8px 14px;font-weight:600;font-size:.82rem;cursor:pointer}
+  .top-btn:hover{background:rgba(255,255,255,.25)}
+  .avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+
+  /* SUB NAV TABS */
+  #subnav{position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);
+    padding:0 16px;display:flex;gap:2px;overflow-x:auto;z-index:999;height:50px;align-items:center}
+  .tab-btn{background:transparent;border:none;padding:8px 14px;font-weight:600;font-size:.82rem;
+    color:var(--muted);cursor:pointer;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:5px}
+  .tab-btn:hover{background:#f1f5f9;color:var(--text)}
+  .tab-btn.active{background:#fef3c7;color:#92400e}
+
+  #main{margin-top:114px;padding:24px;min-height:calc(100vh - 114px)}
+  .page{display:none}
+  .page.active{display:block;animation:fadeIn .25s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* STATS */
+  .stat-card{background:#fff;border-radius:14px;padding:16px;border:1px solid var(--border);transition:all .2s;position:relative;overflow:hidden}
+  .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.06)}
+  .stat-card.hero{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border:none}
+  .stat-card.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%}
+  .stat-icon{font-size:1.3rem;margin-bottom:6px;display:block}
+  .stat-value{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .stat-label{font-size:.75rem;color:var(--muted);margin-top:6px;font-weight:600}
+  .stat-card.hero .stat-label{color:rgba(255,255,255,.85)}
+  .stat-sub{font-size:.7rem;color:var(--muted);margin-top:4px}
+
+  /* CARD */
+  .card-box{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+  .card-head{padding:16px 22px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .card-head h6{font-weight:700;font-size:.95rem;margin:0}
+  .card-body-p{padding:22px}
+  .table-responsive{overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:.84rem}
+  table.t thead th{background:#f8fafc;padding:11px 16px;font-weight:700;color:#475569;
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--border)}
+  table.t tbody td{padding:12px 16px;border-bottom:1px solid #f1f5f9;color:#334155}
+  table.t tbody tr:hover{background:#fafbfc}
+  table.t tbody tr:last-child td{border-bottom:none}
+
+  .badge-st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+  .b-paid{background:#d1fae5;color:#065f46}
+  .b-partial{background:#fef3c7;color:#92400e}
+  .b-pending{background:#fee2e2;color:#991b1b}
+  .b-in{background:#d1fae5;color:#065f46}
+  .b-out{background:#fee2e2;color:#991b1b}
+  .b-low{background:#fee2e2;color:#991b1b}
+  .b-mid{background:#fef3c7;color:#92400e}
+  .b-ok{background:#d1fae5;color:#065f46}
+
+  .btn-pri{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+    border:none;border-radius:8px;padding:9px 16px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(217,119,6,.35)}
+  .btn-out{background:#fff;color:#475569;border:1.5px solid var(--border);border-radius:8px;
+    padding:8px 14px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-out:hover{border-color:var(--primary);color:var(--primary)}
+  .btn-icon{background:#f1f5f9;border:none;border-radius:6px;padding:6px 9px;color:#475569;
+    cursor:pointer;font-size:.85rem;margin-right:4px}
+  .btn-icon:hover{background:#e2e8f0}
+  .btn-icon.danger{color:var(--danger)}
+  .btn-icon.primary{color:var(--primary)}
+  .btn-icon.success{color:var(--success)}
+
+  /* MODAL */
+  .modal-content{border-radius:14px;border:none}
+  .modal-header{padding:18px 22px;border-bottom:1px solid var(--border)}
+  .modal-title{font-weight:700;font-size:1rem}
+  .modal-body{padding:22px}
+  .modal-lg .modal-dialog{max-width:760px}
+  .form-label{font-weight:600;font-size:.8rem;color:#475569;margin-bottom:6px}
+  .form-control,.form-select{border-radius:8px;border:1.5px solid var(--border);padding:9px 12px;font-size:.88rem}
+  .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:none}
+  textarea.form-control{min-height:60px}
+
+  .section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+    color:var(--muted);margin:8px 0 14px}
+
+  /* RAW MATERIAL INPUT */
+  .rm-row{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;margin-bottom:8px;align-items:center}
+  .rm-row label{font-size:.78rem;font-weight:600;color:#475569;margin:0}
+  .stock-bar{height:6px;background:#f1f5f9;border-radius:10px;overflow:hidden;margin-top:6px}
+  .stock-bar-fill{height:100%;border-radius:10px;transition:width .3s}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty i{font-size:3rem;color:#cbd5e1;margin-bottom:12px;display:block}
+  .empty p{margin:6px 0;font-size:.9rem}
+
+  .toast-msg{position:fixed;top:80px;right:20px;background:var(--success);color:#fff;
+    padding:14px 20px;border-radius:10px;font-weight:600;font-size:.88rem;z-index:9999;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;animation:slideIn .3s}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .toast-msg.show{display:block}
+  .toast-msg.error{background:var(--danger)}
+
+  .alert-box{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;
+    font-size:.85rem;color:#78350f;margin-bottom:14px}
+  .alert-box.danger{background:#fee2e2;border-left-color:#ef4444;color:#7f1d1d}
+
+  @media(max-width:768px){
+    #topbar{padding:0 14px}
+    .brand{font-size:1rem}
+    .brand .badge-biz{display:none}
+    #subnav{padding:0 8px}
+    .tab-btn{padding:7px 10px;font-size:.78rem}
+    #main{padding:14px;margin-top:114px}
+    .stat-value{font-size:1.15rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAVBAR ═══════════ -->
+<div id="topbar">
+  <div class="brand">
+    <i class="bi bi-bricks"></i>
+    <span>Mian Blocks Factory</span>
+    <span class="badge-biz d-none d-md-inline">BMS</span>
+  </div>
+  <div class="top-right">
+    <button class="top-btn" onclick="goBack()">
+      <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-sm-inline">Back</span>
+    </button>
+    <div class="avatar">AD</div>
+  </div>
+</div>
+
+<!-- ═══════════ SUB NAV ═══════════ -->
+<div id="subnav">
+  <button class="tab-btn active" onclick="showTab('dashboard',this)"><i class="bi bi-grid-1x2-fill"></i> Dashboard</button>
+  <button class="tab-btn" onclick="showTab('production',this)"><i class="bi bi-gear-fill"></i> Production</button>
+  <button class="tab-btn" onclick="showTab('rawmaterial',this)"><i class="bi bi-box-seam"></i> Raw Material</button>
+  <button class="tab-btn" onclick="showTab('stock',this)"><i class="bi bi-boxes"></i> Stock</button>
+  <button class="tab-btn" onclick="showTab('sales',this)"><i class="bi bi-cart-fill"></i> Sales</button>
+  <button class="tab-btn" onclick="showTab('dispatch',this)"><i class="bi bi-truck"></i> Dispatch</button>
+  <button class="tab-btn" onclick="showTab('vehicles',this)"><i class="bi bi-truck-front"></i> Vehicles</button>
+  <button class="tab-btn" onclick="showTab('employees',this)"><i class="bi bi-people-fill"></i> Employees</button>
+  <button class="tab-btn" onclick="showTab('expenses',this)"><i class="bi bi-receipt"></i> Expenses</button>
+  <button class="tab-btn" onclick="showTab('accounts',this)"><i class="bi bi-bank"></i> Accounts</button>
+  <button class="tab-btn" onclick="showTab('reports',this)"><i class="bi bi-bar-chart-fill"></i> Reports</button>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div id="main">
+
+  <!-- ── DASHBOARD ── -->
+  <div class="page active" id="tab-dashboard">
+    <div class="section-label">Today's Summary — <span id="todayDate"></span></div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card hero"><i class="bi bi-bricks stat-icon"></i><div class="stat-value" id="dTodayProd">0</div><div class="stat-label">Today Production</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-cash-stack stat-icon" style="color:#d97706"></i><div class="stat-value" style="color:#d97706" id="dTodaySale">₨0</div><div class="stat-label">Today Sale</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-boxes stat-icon" style="color:#2563eb"></i><div class="stat-value" style="color:#2563eb" id="dStock">0</div><div class="stat-label">Available Stock</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-clock-history stat-icon" style="color:#f59e0b"></i><div class="stat-value" style="color:#f59e0b" id="dPending">0</div><div class="stat-label">Pending Orders</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-box-seam stat-icon" style="color:#7c3aed"></i><div class="stat-value" style="color:#7c3aed" id="dRawTypes">0</div><div class="stat-label">Raw Material Items</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-receipt stat-icon" style="color:#ef4444"></i><div class="stat-value" style="color:#ef4444" id="dTodayExp">₨0</div><div class="stat-label">Today Expenses</div></div></div>
+    </div>
+
+    <div class="section-label">Inventory Value</div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-box-seam stat-icon" style="color:#7c3aed"></i><div class="stat-value" style="color:#7c3aed" id="dRawValue">₨0</div><div class="stat-label">Raw Material Value (remaining)</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-bricks stat-icon" style="color:#2563eb"></i><div class="stat-value" style="color:#2563eb" id="dStockValue">₨0</div><div class="stat-label">Stock Value (material cost)</div></div></div>
+    </div>
+
+    <div class="section-label">This Month</div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#b45309" id="dMonthProd">0</div><div class="stat-label">Total Production</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#10b981" id="dMonthSale">₨0</div><div class="stat-label">Total Sales</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#ef4444" id="dMonthExp">₨0</div><div class="stat-label">Total Expenses</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#2563eb" id="dProfit">₨0</div><div class="stat-label">Net Profit</div></div></div>
+    </div>
+
+    <div id="lowStockAlert"></div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Block Types Stock</h6><button class="btn-pri" onclick="showTab('stock', document.querySelectorAll('.tab-btn')[3])">View All</button></div>
+          <div class="card-body-p" id="stockSummary"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Raw Material Status</h6><button class="btn-pri" onclick="showTab('rawmaterial', document.querySelectorAll('.tab-btn')[2])">View All</button></div>
+          <div class="card-body-p" id="rawSummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PRODUCTION ── -->
+  <div class="page" id="tab-production">
+    <div class="card-box">
+      <div class="card-head">
+        <div>
+          <h6>Production Records</h6>
+          <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Raw material auto-deduct hota hai, stock auto-add</p>
+        </div>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#prodModal" onclick="openProdModal()">
+          <i class="bi bi-plus-lg me-1"></i> Add Production
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Block Type</th><th>Quantity</th><th>Materials Used</th><th>Action</th></tr>
+          </thead>
+          <tbody id="prodTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RAW MATERIAL ── -->
+  <div class="page" id="tab-rawmaterial">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head">
+            <h6>Raw Material Items</h6>
+            <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#rawItemModal" onclick="resetRawItem()">
+              <i class="bi bi-plus-lg me-1"></i> Add Item
+            </button>
+          </div>
+          <div class="card-body-p" id="rawItemsList"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head">
+            <h6>Recent Purchases</h6>
+            <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#rawPurchaseModal" onclick="openRawPurchase()">
+              <i class="bi bi-plus-lg me-1"></i> Add Purchase
+            </button>
+          </div>
+          <div class="card-body-p" id="rawPurchasesList" style="max-height:500px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STOCK ── -->
+  <div class="page" id="tab-stock">
+    <div class="card-box">
+      <div class="card-head">
+        <div>
+          <h6>Block Stock</h6>
+          <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Auto-updated from production & sales</p>
+        </div>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#blockTypeModal" onclick="resetBlockType()">
+          <i class="bi bi-plus-lg me-1"></i> Add Block Type
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Block Type</th><th>Produced</th><th>Sold</th><th>Damaged</th><th>Available</th><th>Sale Rate</th><th>Action</th></tr>
+          </thead>
+          <tbody id="stockTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SALES ── -->
+  <div class="page" id="tab-sales">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Sales Records</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#saleModal" onclick="openSaleModal()">
+          <i class="bi bi-plus-lg me-1"></i> Add Sale
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="salesTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DISPATCH ── -->
+  <div class="page" id="tab-dispatch">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Dispatch Records</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#dispatchModal" onclick="openDispatchModal()">
+          <i class="bi bi-plus-lg me-1"></i> Add Dispatch
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Vehicle</th><th>Driver</th><th>Loading Time</th><th>Action</th></tr>
+          </thead>
+          <tbody id="dispatchTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VEHICLES ── -->
+  <div class="page" id="tab-vehicles">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Vehicle Management</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#vehicleModal" onclick="resetVehicle()">
+          <i class="bi bi-plus-lg me-1"></i> Add Vehicle
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Vehicle No</th><th>Type</th><th>Driver</th><th>Driver Salary</th><th>Total Fuel</th><th>Total Maintenance</th><th>Trips</th><th>Action</th></tr>
+          </thead>
+          <tbody id="vehicleTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMPLOYEES ── -->
+  <div class="page" id="tab-employees">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Employees</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#empModal" onclick="resetEmpForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Employee
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Name</th><th>Role</th><th>Salary</th><th>Total Advance</th><th>Phone</th><th>Action</th></tr>
+          </thead>
+          <tbody id="empTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXPENSES ── -->
+  <div class="page" id="tab-expenses">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Factory Expenses</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#expModal" onclick="resetExpForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Expense
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Action</th></tr>
+          </thead>
+          <tbody id="expTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACCOUNTS ── -->
+  <div class="page" id="tab-accounts">
+    <div class="row g-3 mb-3">
+      <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#10b981" id="accCashIn">₨0</div><div class="stat-label">Cash In (Month)</div></div></div>
+      <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#ef4444" id="accCashOut">₨0</div><div class="stat-label">Cash Out (Month)</div></div></div>
+      <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#2563eb" id="accBalance">₨0</div><div class="stat-label">Net Balance</div></div></div>
+      <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#f59e0b" id="accReceivable">₨0</div><div class="stat-label">Customer Receivables</div></div></div>
+    </div>
+    <div class="card-box">
+      <div class="card-head">
+        <h6>All Transactions</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#accModal" onclick="resetAccForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Transaction
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th><th>Mode</th><th>Action</th></tr>
+          </thead>
+          <tbody id="accTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REPORTS ── -->
+  <div class="page" id="tab-reports">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Production Report (This Month)</h6></div>
+          <div class="card-body-p" id="prodReport"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Sales Report (This Month)</h6></div>
+          <div class="card-body-p" id="salesReport"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Raw Material Consumption (Month)</h6></div>
+          <div class="card-body-p" id="rmReport"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Profit & Loss (This Month)</h6></div>
+          <div class="card-body-p" id="plReport"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ BLOCK TYPE MODAL ═══════════ -->
+<div class="modal fade" id="blockTypeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="btTitle">Add Block Type</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="btId"/>
+        <div class="mb-3"><label class="form-label">Block Type Name *</label><input type="text" class="form-control" id="btName" placeholder="e.g. 4 inch solid block"/></div>
+        <div class="mb-3"><label class="form-label">Sale Rate per Unit (₨)</label><input type="number" class="form-control" id="btRate" placeholder="0"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveBlockType()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ RAW ITEM MODAL ═══════════ -->
+<div class="modal fade" id="rawItemModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rawItemTitle">Add Raw Material Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rawItemId"/>
+        <div class="mb-3"><label class="form-label">Item Name *</label><input type="text" class="form-control" id="rawItemName" placeholder="e.g. Cement, Sand, Crush, Bajri, Color Chemical, Diesel"/></div>
+        <div class="mb-3"><label class="form-label">Unit *</label><input type="text" class="form-control" id="rawItemUnit" placeholder="e.g. Bag, Trolley, KG, Litre"/></div>
+        <div class="mb-3"><label class="form-label">Low Stock Alert Level</label><input type="number" class="form-control" id="rawItemAlert" placeholder="e.g. 10" value="10"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveRawItem()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ RAW PURCHASE MODAL ═══════════ -->
+<div class="modal fade" id="rawPurchaseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Raw Material Purchase</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="rpDate"/></div>
+        <div class="mb-3"><label class="form-label">Item *</label><select class="form-select" id="rpItem"></select></div>
+        <div class="row g-3 mb-3">
+          <div class="col-6"><label class="form-label">Quantity *</label><input type="number" class="form-control" id="rpQty" placeholder="0"/></div>
+          <div class="col-6"><label class="form-label">Total Price (₨)</label><input type="number" class="form-control" id="rpPrice" placeholder="0"/></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Supplier / Note</label><input type="text" class="form-control" id="rpNote" placeholder="e.g. Ali Cement"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveRawPurchase()">Save Purchase</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRODUCTION MODAL ═══════════ -->
+<div class="modal fade" id="prodModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Production</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><label class="form-label">Date</label><input type="date" class="form-control" id="prodDate"/></div>
+          <div class="col-md-4"><label class="form-label">Block Type *</label><select class="form-select" id="prodBlock"></select></div>
+          <div class="col-md-4"><label class="form-label">Quantity Produced *</label><input type="number" class="form-control" id="prodQty" placeholder="0"/></div>
+        </div>
+        <div class="section-label">Raw Material Used (auto-deduct from stock)</div>
+        <div id="prodMaterials"></div>
+        <button class="btn-out btn-sm" onclick="addProdMatRow()"><i class="bi bi-plus me-1"></i> Add Material Row</button>
+        <div class="mb-3 mt-3"><label class="form-label">Note</label><input type="text" class="form-control" id="prodNote"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveProduction()">Save Production</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SALE MODAL ═══════════ -->
+<div class="modal fade" id="saleModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Sale</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6"><label class="form-label">Date</label><input type="date" class="form-control" id="saleDate"/></div>
+          <div class="col-md-6"><label class="form-label">Customer Name *</label><input type="text" class="form-control" id="saleCust" placeholder="e.g. Ahmed Construction"/></div>
+          <div class="col-md-6"><label class="form-label">Customer Phone</label><input type="text" class="form-control" id="saleCustPhone"/></div>
+          <div class="col-md-6"><label class="form-label">Address</label><input type="text" class="form-control" id="saleCustAddr"/></div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><label class="form-label">Block Type *</label><select class="form-select" id="saleBlock" onchange="setSaleRate()"></select></div>
+          <div class="col-md-4"><label class="form-label">Quantity *</label><input type="number" class="form-control" id="saleQty" oninput="calcSaleTotal()"/></div>
+          <div class="col-md-4"><label class="form-label">Rate per Unit *</label><input type="number" class="form-control" id="saleRate" oninput="calcSaleTotal()"/></div>
+          <div class="col-md-4"><label class="form-label">Subtotal</label><input type="number" class="form-control" id="saleSubtotal" readonly style="background:#f1f5f9"/></div>
+          <div class="col-md-4"><label class="form-label">Discount <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="saleDiscount" value="0" oninput="calcSaleTotal()"/>
+              <select class="form-select" id="saleDiscountType" style="max-width:70px" onchange="calcSaleTotal()">
+                <option value="amount">₨</option>
+                <option value="percent">%</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4"><label class="form-label">Total (after discount)</label><input type="number" class="form-control" id="saleTotal" readonly style="background:#f1f5f9;font-weight:600"/></div>
+          <div class="col-md-4"><label class="form-label">Paid Amount</label><input type="number" class="form-control" id="salePaid" value="0"/></div>
+          <div class="col-md-4"><label class="form-label">Payment Mode</label><select class="form-select" id="salePayMode"><option>Cash</option><option>Bank</option><option>Credit</option></select></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="saleNote"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveSale()">Save Sale</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DISPATCH MODAL ═══════════ -->
+<div class="modal fade" id="dispatchModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Dispatch Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="dispDate"/></div>
+        <div class="mb-3"><label class="form-label">Vehicle *</label><select class="form-select" id="dispVehicle"></select></div>
+        <div class="mb-3"><label class="form-label">Driver Name</label><input type="text" class="form-control" id="dispDriver"/></div>
+        <div class="mb-3"><label class="form-label">Customer Name</label><input type="text" class="form-control" id="dispCust"/></div>
+        <div class="row g-3 mb-3">
+          <div class="col-6"><label class="form-label">Product</label><select class="form-select" id="dispProduct"></select></div>
+          <div class="col-6"><label class="form-label">Quantity</label><input type="number" class="form-control" id="dispQty"/></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Loading Time</label><input type="time" class="form-control" id="dispTime"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveDispatch()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VEHICLE MODAL ═══════════ -->
+<div class="modal fade" id="vehicleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="vTitle">Add Vehicle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="vId"/>
+        <div class="mb-3"><label class="form-label">Vehicle No *</label><input type="text" class="form-control" id="vNo" placeholder="e.g. LEB-1234"/></div>
+        <div class="mb-3"><label class="form-label">Type</label><input type="text" class="form-control" id="vType" placeholder="e.g. Mazda, Shahzore"/></div>
+        <div class="mb-3"><label class="form-label">Driver Name</label><input type="text" class="form-control" id="vDriver"/></div>
+        <div class="mb-3"><label class="form-label">Driver Salary</label><input type="number" class="form-control" id="vSalary" placeholder="0"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveVehicle()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VEHICLE EXPENSE MODAL ═══════════ -->
+<div class="modal fade" id="vExpModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Vehicle Expense</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="vExpVid"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="vExpDate"/></div>
+        <div class="mb-3"><label class="form-label">Type</label>
+          <select class="form-select" id="vExpType">
+            <option value="fuel">Fuel</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="vExpAmount"/></div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="vExpNote"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveVehicleExp()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EMPLOYEE MODAL ═══════════ -->
+<div class="modal fade" id="empModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="empTitle">Add Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empIdInput"/>
+        <div class="mb-3"><label class="form-label">Name *</label><input type="text" class="form-control" id="empName" placeholder="e.g. Ali Raza"/></div>
+        <div class="mb-3"><label class="form-label">Role / Designation</label><input type="text" class="form-control" id="empRole" placeholder="e.g. Factory Manager"/></div>
+        <div class="mb-3"><label class="form-label">Monthly Salary</label><input type="number" class="form-control" id="empSalary" placeholder="0"/></div>
+        <div class="mb-3"><label class="form-label">Phone</label><input type="text" class="form-control" id="empPhone"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveEmployee()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EMPLOYEE ADVANCE MODAL ═══════════ -->
+<div class="modal fade" id="empAdvModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Advance / Payment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empAdvId"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="empAdvDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="empAdvType">
+            <option value="advance">Advance</option>
+            <option value="salary">Salary Paid</option>
+            <option value="overtime">Overtime</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="empAdvAmount"/></div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="empAdvNote"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveEmpAdvance()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EXPENSE MODAL ═══════════ -->
+<div class="modal fade" id="expModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Expense</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="expDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="expCategory">
+            <option>Diesel</option><option>Electricity</option><option>Repair</option>
+            <option>Tea</option><option>Labour</option><option>Machine Maintenance</option>
+            <option>Factory Rent</option><option>Other</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Description *</label><input type="text" class="form-control" id="expDesc"/></div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="expAmount"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveExpense()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ACCOUNT MODAL ═══════════ -->
+<div class="modal fade" id="accModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Transaction</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="accDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="accType">
+            <option value="in">Cash In</option>
+            <option value="out">Cash Out</option>
+            <option value="recovery">Customer Recovery</option>
+            <option value="supplier">Supplier Payment</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Description *</label><input type="text" class="form-control" id="accDesc"/></div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="accAmount"/></div>
+        <div class="mb-3">
+          <label class="form-label">Mode</label>
+          <select class="form-select" id="accMode"><option>Cash</option><option>Bank</option></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveAcc()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Firebase Configuration & Helpers -->
+<script type="module" src="firebase-config.js"></script>
+
+<script>
+  // ═════════ Wait for Firebase to load ═════════
+  function waitForBMS(callback){
+    if(window.BMS){ callback(); return; }
+    setTimeout(() => waitForBMS(callback), 50);
+  }
+
+  // ═════════ AUTH GUARD ═════════
+  (function authGuard(){
+    let session = null;
+    try{ session = JSON.parse(localStorage.getItem('bms_session') || sessionStorage.getItem('bms_session')); }catch(e){}
+    if(!session){ window.location.href = 'admin-dashboard.html'; return; }
+    if(session.role === 'manager' && session.biz !== 'blocks'){
+      alert('Aap ko iss business ka access nahi hai!');
+      window.location.href = 'admin-dashboard.html';
+      return;
+    }
+    window.__SESSION = session;
+  })();
+
+  // ═════════ DB (Firebase-backed with local cache) ═════════
+  const BIZ = 'blocks';
+  const _cache = {};
+
+  const DB = {
+    get(k, def){
+      return _cache[k] !== undefined ? _cache[k] : def;
+    },
+    set(k, v){
+      _cache[k] = v;
+      if(window.BMS){
+        window.BMS.set('businesses', BIZ, { ..._cache, updatedAt: new Date().toISOString() })
+          .catch(e => {
+            console.error('Firebase save failed:', e);
+            toast('Save fail. Check internet.', 'error');
+          });
+      }
+    }
+  };
+
+  // ═════════ Load initial data from Firebase ═════════
+  async function loadInitialData(){
+    try {
+      const doc = await window.BMS.getOne('businesses', BIZ);
+      if(doc){
+        Object.keys(doc).forEach(k => {
+          if(k !== 'id' && k !== 'updatedAt') _cache[k] = doc[k];
+        });
+      }
+      // Pre-fill default block types if none exist
+      if(!_cache.blockTypes || _cache.blockTypes.length === 0){
+        _cache.blockTypes = [
+          { id: 'BT'+Date.now()+'1', name: '4 inch Solid Block', rate: 0, createdAt: new Date().toISOString() },
+          { id: 'BT'+Date.now()+'2', name: '6 inch Solid Block', rate: 0, createdAt: new Date().toISOString() },
+          { id: 'BT'+Date.now()+'3', name: '8 inch Solid Block', rate: 0, createdAt: new Date().toISOString() },
+          { id: 'BT'+Date.now()+'4', name: '4 inch Hollow Block', rate: 0, createdAt: new Date().toISOString() },
+          { id: 'BT'+Date.now()+'5', name: '6 inch Hollow Block', rate: 0, createdAt: new Date().toISOString() }
+        ];
+        // Save defaults to Firebase
+        if(window.BMS){
+          await window.BMS.set('businesses', BIZ, { ..._cache, updatedAt: new Date().toISOString() });
+        }
+      }
+      console.log('✅ Blocks Factory data loaded from Firebase');
+    } catch(e){
+      console.error('Initial load failed:', e);
+      toast('Firebase connection failed. Check internet.', 'error');
+    }
+  }
+
+  function toast(msg, type='success'){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast-msg show' + (type==='error'?' error':'');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  }
+  function fmt(n){ return '₨' + Math.round(n||0).toLocaleString() }
+  function fmtN(n){ return (n||0).toLocaleString() }
+  function todayStr(){ return new Date().toISOString().split('T')[0] }
+  function isToday(d){ return d === todayStr() }
+  function isThisMonth(d){
+    if(!d) return false;
+    const [y,m] = d.split('-');
+    const now = new Date();
+    return parseInt(y) === now.getFullYear() && parseInt(m) === (now.getMonth()+1);
+  }
+  function fmtDate(d){ if(!d) return '—'; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}` }
+
+  function showTab(id, btn){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    const fnMap = {
+      dashboard: renderDashboard, production: renderProduction, rawmaterial: renderRawMaterial,
+      stock: renderStock, sales: renderSales, dispatch: renderDispatch, vehicles: renderVehicles,
+      employees: renderEmployees, expenses: renderExpenses, accounts: renderAccounts, reports: renderReports
+    };
+    if(fnMap[id]) fnMap[id]();
+    window.scrollTo(0,0);
+  }
+
+  function goBack(){ window.location.href = 'admin-dashboard.html'; }
+
+  // ═════════ BLOCK TYPES ═════════
+  function resetBlockType(){
+    document.getElementById('btId').value = '';
+    document.getElementById('btTitle').textContent = 'Add Block Type';
+    document.getElementById('btName').value = '';
+    document.getElementById('btRate').value = '';
+  }
+
+  function saveBlockType(){
+    const name = document.getElementById('btName').value.trim();
+    if(!name){ toast('Name required','error'); return; }
+    const types = DB.get('blockTypes', []);
+    const id = document.getElementById('btId').value;
+    const data = { id: id || 'BT'+Date.now(), name, rate: parseFloat(document.getElementById('btRate').value) || 0 };
+    if(id){ const idx = types.findIndex(t => t.id === id); types[idx] = data; }
+    else { types.push(data); }
+    DB.set('blockTypes', types);
+    bootstrap.Modal.getInstance(document.getElementById('blockTypeModal')).hide();
+    renderStock();
+    toast('Block type save ho gaya');
+  }
+
+  function deleteBlockType(id){
+    if(!confirm('Delete this block type?')) return;
+    let types = DB.get('blockTypes', []);
+    types = types.filter(t => t.id !== id);
+    DB.set('blockTypes', types);
+    renderStock();
+    toast('Deleted');
+  }
+
+  function editBlockType(id){
+    const types = DB.get('blockTypes', []);
+    const t = types.find(x => x.id === id);
+    document.getElementById('btId').value = t.id;
+    document.getElementById('btTitle').textContent = 'Edit Block Type';
+    document.getElementById('btName').value = t.name;
+    document.getElementById('btRate').value = t.rate;
+    new bootstrap.Modal(document.getElementById('blockTypeModal')).show();
+  }
+
+  // ═════════ STOCK CALCULATION ═════════
+  function getBlockStock(blockId){
+    const productions = DB.get('productions', []);
+    const sales = DB.get('sales', []);
+    const produced = productions.filter(p => p.blockId === blockId).reduce((s,p) => s + (p.qty||0), 0);
+    const sold = sales.filter(s => s.blockId === blockId).reduce((s,x) => s + (x.qty||0), 0);
+    return { produced, sold, available: produced - sold };
+  }
+
+  // Average unit cost of a raw item (total purchase price / total qty purchased)
+  function rawUnitCost(itemId){
+    const purchases = DB.get('rawPurchases', []).filter(p => p.itemId === itemId);
+    const totQty = purchases.reduce((s,p) => s + (p.qty||0), 0);
+    const totVal = purchases.reduce((s,p) => s + (p.price||0), 0);
+    return totQty > 0 ? totVal / totQty : 0;
+  }
+
+  // Remaining value of a single raw item
+  function rawItemValue(itemId){
+    return getRawStock(itemId).available * rawUnitCost(itemId);
+  }
+
+  // Total remaining raw material value (all items)
+  function rawRemainingValue(){
+    return DB.get('rawItems', []).reduce((s,i) => s + rawItemValue(i.id), 0);
+  }
+
+  // Material cost per block for a block type (from its productions)
+  function blockMaterialCost(blockId){
+    const prods = DB.get('productions', []).filter(p => p.blockId === blockId);
+    const producedQty = prods.reduce((s,p) => s + (p.qty||0), 0);
+    if(producedQty <= 0) return 0;
+    const matCost = prods.reduce((s,p) =>
+      s + (p.materials||[]).reduce((ss,m) => ss + (m.qty||0) * rawUnitCost(m.itemId), 0), 0);
+    return matCost / producedQty;
+  }
+
+  // Total finished-stock value (available blocks × material cost per block)
+  function stockValue(){
+    return DB.get('blockTypes', []).reduce((s,t) =>
+      s + getBlockStock(t.id).available * blockMaterialCost(t.id), 0);
+  }
+
+  function renderStock(){
+    const types = DB.get('blockTypes', []);
+    const tbody = document.getElementById('stockTable');
+    if(types.length === 0){
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><i class="bi bi-boxes"></i><p>Pehle block types add karein</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = types.map(t => {
+      const s = getBlockStock(t.id);
+      return `<tr>
+        <td><strong>${t.name}</strong></td>
+        <td style="color:#10b981;font-weight:600">${fmtN(s.produced)}</td>
+        <td style="color:#ef4444;font-weight:600">${fmtN(s.sold)}</td>
+        <td style="color:#94a3b8">0</td>
+        <td style="font-weight:700;color:${s.available>0?'#2563eb':'#ef4444'}">${fmtN(s.available)}</td>
+        <td>${fmt(t.rate)}</td>
+        <td>
+          <button class="btn-icon primary" onclick="editBlockType('${t.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn-icon danger" onclick="deleteBlockType('${t.id}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ RAW MATERIAL ═════════
+  function resetRawItem(){
+    document.getElementById('rawItemId').value = '';
+    document.getElementById('rawItemTitle').textContent = 'Add Raw Material Item';
+    document.getElementById('rawItemName').value = '';
+    document.getElementById('rawItemUnit').value = '';
+    document.getElementById('rawItemAlert').value = 10;
+  }
+
+  function saveRawItem(){
+    const name = document.getElementById('rawItemName').value.trim();
+    const unit = document.getElementById('rawItemUnit').value.trim();
+    if(!name || !unit){ toast('Name aur unit zaruri hain','error'); return; }
+    const items = DB.get('rawItems', []);
+    const id = document.getElementById('rawItemId').value;
+    const data = {
+      id: id || 'RI'+Date.now(),
+      name, unit,
+      alert: parseFloat(document.getElementById('rawItemAlert').value) || 0
+    };
+    if(id){ const idx = items.findIndex(i => i.id === id); items[idx] = data; }
+    else items.push(data);
+    DB.set('rawItems', items);
+    bootstrap.Modal.getInstance(document.getElementById('rawItemModal')).hide();
+    renderRawMaterial();
+    toast('Saved');
+  }
+
+  function editRawItem(id){
+    const items = DB.get('rawItems', []);
+    const i = items.find(x => x.id === id);
+    document.getElementById('rawItemId').value = i.id;
+    document.getElementById('rawItemTitle').textContent = 'Edit Raw Material';
+    document.getElementById('rawItemName').value = i.name;
+    document.getElementById('rawItemUnit').value = i.unit;
+    document.getElementById('rawItemAlert').value = i.alert;
+    new bootstrap.Modal(document.getElementById('rawItemModal')).show();
+  }
+
+  function deleteRawItem(id){
+    if(!confirm('Delete this item?')) return;
+    let items = DB.get('rawItems', []);
+    items = items.filter(i => i.id !== id);
+    DB.set('rawItems', items);
+    renderRawMaterial();
+  }
+
+  function getRawStock(itemId){
+    const purchases = DB.get('rawPurchases', []);
+    const productions = DB.get('productions', []);
+    const purchased = purchases.filter(p => p.itemId === itemId).reduce((s,p) => s + (p.qty||0), 0);
+    let used = 0;
+    productions.forEach(p => {
+      (p.materials || []).forEach(m => {
+        if(m.itemId === itemId) used += (m.qty || 0);
+      });
+    });
+    return { purchased, used, available: purchased - used };
+  }
+
+  function openRawPurchase(){
+    const items = DB.get('rawItems', []);
+    if(items.length === 0){ toast('Pehle raw item add karein','error'); return; }
+    document.getElementById('rpDate').value = todayStr();
+    document.getElementById('rpQty').value = '';
+    document.getElementById('rpPrice').value = '';
+    document.getElementById('rpNote').value = '';
+    document.getElementById('rpItem').innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+  }
+
+  function saveRawPurchase(){
+    const qty = parseFloat(document.getElementById('rpQty').value) || 0;
+    if(qty <= 0){ toast('Quantity enter karein','error'); return; }
+    const purchases = DB.get('rawPurchases', []);
+    purchases.push({
+      id: 'RP'+Date.now(),
+      date: document.getElementById('rpDate').value || todayStr(),
+      itemId: document.getElementById('rpItem').value,
+      qty,
+      price: parseFloat(document.getElementById('rpPrice').value) || 0,
+      note: document.getElementById('rpNote').value.trim()
+    });
+    DB.set('rawPurchases', purchases);
+    bootstrap.Modal.getInstance(document.getElementById('rawPurchaseModal')).hide();
+    renderRawMaterial();
+    toast('Purchase add ho gayi');
+  }
+
+  function deleteRawPurchase(id){
+    if(!confirm('Delete this purchase?')) return;
+    let p = DB.get('rawPurchases', []);
+    p = p.filter(x => x.id !== id);
+    DB.set('rawPurchases', p);
+    renderRawMaterial();
+  }
+
+  function renderRawMaterial(){
+    const items = DB.get('rawItems', []);
+    const purchases = DB.get('rawPurchases', []);
+
+    if(items.length === 0){
+      document.getElementById('rawItemsList').innerHTML = '<div class="empty"><i class="bi bi-box-seam"></i><p>Pehle raw material items add karein</p><p style="font-size:.8rem">e.g. Cement, Sand, Crush, Bajri, Color Chemical, Diesel</p></div>';
+    } else {
+      document.getElementById('rawItemsList').innerHTML = items.map(i => {
+        const s = getRawStock(i.id);
+        const isLow = s.available <= i.alert;
+        return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+              <strong>${i.name}</strong>
+              <div style="font-size:.78rem;color:#64748b">Unit: ${i.unit} · Alert below: ${i.alert}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:1.2rem;font-weight:800;color:${isLow?'#ef4444':'#2563eb'}">${fmtN(s.available)} ${i.unit}</div>
+              ${isLow ? '<span class="badge-st b-low">LOW</span>' : '<span class="badge-st b-ok">OK</span>'}
+            </div>
+          </div>
+          <div style="font-size:.78rem;color:#94a3b8;margin-top:8px">
+            Purchased: ${fmtN(s.purchased)} ${i.unit} · Used: ${fmtN(s.used)} ${i.unit}
+          </div>
+          <div style="font-size:.82rem;color:#7c3aed;font-weight:600;margin-top:4px">
+            Remaining Value: ${fmt(Math.round(rawItemValue(i.id)))} <span style="color:#94a3b8;font-weight:400">(@ ${fmt(Math.round(rawUnitCost(i.id)))}/${i.unit})</span>
+          </div>
+          <div style="margin-top:8px">
+            <button class="btn-icon primary" onclick="editRawItem('${i.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn-icon danger" onclick="deleteRawItem('${i.id}')"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    const sortedP = [...purchases].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,20);
+    if(sortedP.length === 0){
+      document.getElementById('rawPurchasesList').innerHTML = '<div class="empty"><i class="bi bi-cart"></i><p>Abhi koi purchase nahi</p></div>';
+    } else {
+      document.getElementById('rawPurchasesList').innerHTML = sortedP.map(p => {
+        const item = items.find(i => i.id === p.itemId);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #f1f5f9">
+          <div>
+            <strong style="font-size:.88rem">${item?.name || 'Unknown'}</strong>
+            <div style="font-size:.76rem;color:#64748b">${fmtDate(p.date)} · ${p.note || '—'}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:700;color:#10b981">+${fmtN(p.qty)} ${item?.unit || ''}</div>
+            <div style="font-size:.76rem;color:#64748b">${fmt(p.price)}</div>
+            <button class="btn-icon danger" onclick="deleteRawPurchase('${p.id}')" style="margin-top:2px"><i class="bi bi-x"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ═════════ PRODUCTION ═════════
+  function openProdModal(){
+    const types = DB.get('blockTypes', []);
+    if(types.length === 0){ toast('Pehle block type add karein','error'); return; }
+    document.getElementById('prodDate').value = todayStr();
+    document.getElementById('prodQty').value = '';
+    document.getElementById('prodNote').value = '';
+    document.getElementById('prodBlock').innerHTML = types.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    document.getElementById('prodMaterials').innerHTML = '';
+    addProdMatRow();
+  }
+
+  function addProdMatRow(){
+    const items = DB.get('rawItems', []);
+    if(items.length === 0){ toast('Pehle raw items add karein','error'); return; }
+    const div = document.createElement('div');
+    div.className = 'rm-row';
+    div.innerHTML = `
+      <select class="form-select form-select-sm prod-mat-item">
+        ${items.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('')}
+      </select>
+      <input type="number" class="form-control form-control-sm prod-mat-qty" placeholder="Qty used"/>
+      <button class="btn-icon danger" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+    `;
+    document.getElementById('prodMaterials').appendChild(div);
+  }
+
+  function saveProduction(){
+    const qty = parseFloat(document.getElementById('prodQty').value) || 0;
+    if(qty <= 0){ toast('Quantity enter karein','error'); return; }
+
+    const materials = [];
+    document.querySelectorAll('#prodMaterials .rm-row').forEach(row => {
+      const itemId = row.querySelector('.prod-mat-item').value;
+      const q = parseFloat(row.querySelector('.prod-mat-qty').value) || 0;
+      if(q > 0) materials.push({ itemId, qty: q });
+    });
+
+    const productions = DB.get('productions', []);
+    productions.push({
+      id: 'PR'+Date.now(),
+      date: document.getElementById('prodDate').value || todayStr(),
+      blockId: document.getElementById('prodBlock').value,
+      qty,
+      materials,
+      note: document.getElementById('prodNote').value.trim()
+    });
+    DB.set('productions', productions);
+    bootstrap.Modal.getInstance(document.getElementById('prodModal')).hide();
+    renderProduction();
+    toast('Production add ho gayi (stock + materials updated)');
+  }
+
+  function deleteProduction(id){
+    if(!confirm('Delete? Stock aur materials wapis adjust ho jayenge')) return;
+    let p = DB.get('productions', []);
+    p = p.filter(x => x.id !== id);
+    DB.set('productions', p);
+    renderProduction();
+  }
+
+  function renderProduction(){
+    const productions = DB.get('productions', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const types = DB.get('blockTypes', []);
+    const items = DB.get('rawItems', []);
+    const tbody = document.getElementById('prodTable');
+    if(productions.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><i class="bi bi-gear"></i><p>No records yet</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = productions.map(p => {
+      const block = types.find(t => t.id === p.blockId);
+      const matText = (p.materials || []).map(m => {
+        const it = items.find(i => i.id === m.itemId);
+        return it ? `${it.name}: ${m.qty} ${it.unit}` : '';
+      }).filter(Boolean).join(', ');
+      return `<tr>
+        <td>${fmtDate(p.date)}</td>
+        <td><strong>${block?.name || 'Unknown'}</strong></td>
+        <td style="font-weight:700;color:#d97706">${fmtN(p.qty)}</td>
+        <td style="font-size:.78rem;color:#64748b">${matText || '—'}</td>
+        <td><button class="btn-icon danger" onclick="deleteProduction('${p.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ SALES ═════════
+  function openSaleModal(){
+    const types = DB.get('blockTypes', []);
+    if(types.length === 0){ toast('Pehle block types add karein','error'); return; }
+    ['saleCust','saleCustPhone','saleCustAddr','saleQty','saleRate','saleSubtotal','saleTotal','saleNote'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('salePaid').value = 0;
+    document.getElementById('saleDiscount').value = 0;
+    document.getElementById('saleDiscountType').value = 'amount';
+    document.getElementById('saleDate').value = todayStr();
+    document.getElementById('saleBlock').innerHTML = types.map(t => `<option value="${t.id}" data-rate="${t.rate}">${t.name} (Stock: ${getBlockStock(t.id).available})</option>`).join('');
+    setSaleRate();
+  }
+
+  function setSaleRate(){
+    const sel = document.getElementById('saleBlock');
+    const rate = sel.options[sel.selectedIndex]?.dataset.rate || 0;
+    document.getElementById('saleRate').value = rate;
+    calcSaleTotal();
+  }
+
+  function calcSaleTotal(){
+    const q = parseFloat(document.getElementById('saleQty').value) || 0;
+    const r = parseFloat(document.getElementById('saleRate').value) || 0;
+    const subtotal = q * r;
+    let disc = parseFloat(document.getElementById('saleDiscount').value) || 0;
+    const dType = document.getElementById('saleDiscountType').value;
+    let discAmt = dType === 'percent' ? subtotal * disc / 100 : disc;
+    if(discAmt < 0) discAmt = 0;
+    if(discAmt > subtotal) discAmt = subtotal;
+    document.getElementById('saleSubtotal').value = subtotal;
+    document.getElementById('saleTotal').value = Math.round((subtotal - discAmt) * 100) / 100;
+  }
+
+  function saveSale(){
+    const cust = document.getElementById('saleCust').value.trim();
+    const qty = parseFloat(document.getElementById('saleQty').value) || 0;
+    const rate = parseFloat(document.getElementById('saleRate').value) || 0;
+    if(!cust || qty <= 0 || rate <= 0){ toast('Customer, qty, rate zaruri hain','error'); return; }
+
+    const blockId = document.getElementById('saleBlock').value;
+    const stock = getBlockStock(blockId);
+    if(qty > stock.available){
+      if(!confirm(`Available stock sirf ${stock.available} hai. Phir bhi save karein?`)) return;
+    }
+
+    const sales = DB.get('sales', []);
+    const subtotal = qty * rate;
+    let disc = parseFloat(document.getElementById('saleDiscount').value) || 0;
+    const dType = document.getElementById('saleDiscountType').value;
+    let discAmt = dType === 'percent' ? subtotal * disc / 100 : disc;
+    if(discAmt < 0) discAmt = 0;
+    if(discAmt > subtotal) discAmt = subtotal;
+    const total = Math.round((subtotal - discAmt) * 100) / 100;
+    const paid = parseFloat(document.getElementById('salePaid').value) || 0;
+    sales.push({
+      id: 'SL'+Date.now(),
+      date: document.getElementById('saleDate').value || todayStr(),
+      cust,
+      custPhone: document.getElementById('saleCustPhone').value.trim(),
+      custAddr: document.getElementById('saleCustAddr').value.trim(),
+      blockId,
+      qty,
+      rate,
+      subtotal,
+      discount: disc,
+      discountType: dType,
+      discountAmt: Math.round(discAmt * 100) / 100,
+      total,
+      paid,
+      payMode: document.getElementById('salePayMode').value,
+      note: document.getElementById('saleNote').value.trim()
+    });
+    DB.set('sales', sales);
+    bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide();
+    renderSales();
+    toast('Sale add ho gayi (stock auto-update)');
+  }
+
+  function deleteSale(id){
+    if(!confirm('Delete? Stock wapis adjust ho jayega')) return;
+    let s = DB.get('sales', []);
+    s = s.filter(x => x.id !== id);
+    DB.set('sales', s);
+    renderSales();
+  }
+
+  function renderSales(){
+    const sales = DB.get('sales', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const types = DB.get('blockTypes', []);
+    const tbody = document.getElementById('salesTable');
+    if(sales.length === 0){
+      tbody.innerHTML = `<tr><td colspan="10"><div class="empty"><i class="bi bi-cart"></i><p>Abhi koi sale nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = sales.map(s => {
+      const block = types.find(t => t.id === s.blockId);
+      const remaining = s.total - s.paid;
+      const status = remaining <= 0 ? 'paid' : (s.paid > 0 ? 'partial' : 'pending');
+      return `<tr>
+        <td>${fmtDate(s.date)}</td>
+        <td><strong>${s.cust}</strong>${s.custPhone?`<br><small style="color:#94a3b8">${s.custPhone}</small>`:''}</td>
+        <td>${block?.name || '—'}</td>
+        <td>${fmtN(s.qty)}</td>
+        <td>${fmt(s.rate)}</td>
+        <td style="font-weight:700">${fmt(s.total)}</td>
+        <td style="color:#10b981;font-weight:600">${fmt(s.paid)}</td>
+        <td style="color:${remaining>0?'#ef4444':'#10b981'};font-weight:600">${fmt(remaining)}</td>
+        <td><span class="badge-st b-${status}">${status}</span></td>
+        <td><button class="btn-icon danger" onclick="deleteSale('${s.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ DISPATCH ═════════
+  function openDispatchModal(){
+    const vehicles = DB.get('vehicles', []);
+    const types = DB.get('blockTypes', []);
+    if(vehicles.length === 0){ toast('Pehle vehicle add karein','error'); return; }
+    document.getElementById('dispDate').value = todayStr();
+    document.getElementById('dispVehicle').innerHTML = vehicles.map(v => `<option value="${v.id}">${v.no} ${v.driver?'('+v.driver+')':''}</option>`).join('');
+    document.getElementById('dispProduct').innerHTML = '<option value="">--</option>' + types.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    ['dispDriver','dispCust','dispQty','dispTime'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function saveDispatch(){
+    const dispatches = DB.get('dispatches', []);
+    const vehicleId = document.getElementById('dispVehicle').value;
+    const vehicles = DB.get('vehicles', []);
+    const v = vehicles.find(x => x.id === vehicleId);
+    dispatches.push({
+      id: 'DP'+Date.now(),
+      date: document.getElementById('dispDate').value || todayStr(),
+      vehicleId,
+      vehicleNo: v?.no || '',
+      driver: document.getElementById('dispDriver').value.trim() || v?.driver || '',
+      cust: document.getElementById('dispCust').value.trim(),
+      productId: document.getElementById('dispProduct').value,
+      qty: parseFloat(document.getElementById('dispQty').value) || 0,
+      time: document.getElementById('dispTime').value
+    });
+    DB.set('dispatches', dispatches);
+    bootstrap.Modal.getInstance(document.getElementById('dispatchModal')).hide();
+    renderDispatch();
+    toast('Dispatch add ho gaya');
+  }
+
+  function deleteDispatch(id){
+    if(!confirm('Delete?')) return;
+    let d = DB.get('dispatches', []);
+    d = d.filter(x => x.id !== id);
+    DB.set('dispatches', d);
+    renderDispatch();
+  }
+
+  function renderDispatch(){
+    const dispatches = DB.get('dispatches', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const types = DB.get('blockTypes', []);
+    const tbody = document.getElementById('dispatchTable');
+    if(dispatches.length === 0){
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><i class="bi bi-truck"></i><p>Abhi koi dispatch nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = dispatches.map(d => {
+      const block = types.find(t => t.id === d.productId);
+      return `<tr>
+        <td>${fmtDate(d.date)}</td>
+        <td>${d.cust || '—'}</td>
+        <td>${block?.name || '—'}</td>
+        <td>${fmtN(d.qty)}</td>
+        <td><strong>${d.vehicleNo}</strong></td>
+        <td>${d.driver || '—'}</td>
+        <td>${d.time || '—'}</td>
+        <td><button class="btn-icon danger" onclick="deleteDispatch('${d.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ VEHICLES ═════════
+  function resetVehicle(){
+    document.getElementById('vId').value = '';
+    document.getElementById('vTitle').textContent = 'Add Vehicle';
+    ['vNo','vType','vDriver','vSalary'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function saveVehicle(){
+    const no = document.getElementById('vNo').value.trim();
+    if(!no){ toast('Vehicle no zaruri hai','error'); return; }
+    const vehicles = DB.get('vehicles', []);
+    const id = document.getElementById('vId').value;
+    const data = {
+      id: id || 'V'+Date.now(),
+      no,
+      type: document.getElementById('vType').value.trim(),
+      driver: document.getElementById('vDriver').value.trim(),
+      salary: parseFloat(document.getElementById('vSalary').value) || 0
+    };
+    if(id){ const idx = vehicles.findIndex(v => v.id === id); data.expenses = vehicles[idx].expenses || []; vehicles[idx] = data; }
+    else { data.expenses = []; vehicles.push(data); }
+    DB.set('vehicles', vehicles);
+    bootstrap.Modal.getInstance(document.getElementById('vehicleModal')).hide();
+    renderVehicles();
+    toast('Vehicle save');
+  }
+
+  function editVehicle(id){
+    const v = DB.get('vehicles', []).find(x => x.id === id);
+    document.getElementById('vId').value = v.id;
+    document.getElementById('vTitle').textContent = 'Edit Vehicle';
+    document.getElementById('vNo').value = v.no;
+    document.getElementById('vType').value = v.type;
+    document.getElementById('vDriver').value = v.driver;
+    document.getElementById('vSalary').value = v.salary;
+    new bootstrap.Modal(document.getElementById('vehicleModal')).show();
+  }
+
+  function deleteVehicle(id){
+    if(!confirm('Delete vehicle?')) return;
+    let v = DB.get('vehicles', []);
+    v = v.filter(x => x.id !== id);
+    DB.set('vehicles', v);
+    renderVehicles();
+  }
+
+  function openVExp(vid){
+    document.getElementById('vExpVid').value = vid;
+    document.getElementById('vExpDate').value = todayStr();
+    document.getElementById('vExpType').value = 'fuel';
+    document.getElementById('vExpAmount').value = '';
+    document.getElementById('vExpNote').value = '';
+    new bootstrap.Modal(document.getElementById('vExpModal')).show();
+  }
+
+  function saveVehicleExp(){
+    const vid = document.getElementById('vExpVid').value;
+    const amount = parseFloat(document.getElementById('vExpAmount').value) || 0;
+    if(amount <= 0){ toast('Amount enter karein','error'); return; }
+    const vehicles = DB.get('vehicles', []);
+    const v = vehicles.find(x => x.id === vid);
+    v.expenses = v.expenses || [];
+    v.expenses.push({
+      id: 'VE'+Date.now(),
+      date: document.getElementById('vExpDate').value || todayStr(),
+      type: document.getElementById('vExpType').value,
+      amount,
+      note: document.getElementById('vExpNote').value.trim()
+    });
+    DB.set('vehicles', vehicles);
+    bootstrap.Modal.getInstance(document.getElementById('vExpModal')).hide();
+    renderVehicles();
+    toast('Expense add');
+  }
+
+  function renderVehicles(){
+    const vehicles = DB.get('vehicles', []);
+    const dispatches = DB.get('dispatches', []);
+    const tbody = document.getElementById('vehicleTable');
+    if(vehicles.length === 0){
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><i class="bi bi-truck-front"></i><p>Abhi koi vehicle nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = vehicles.map(v => {
+      const fuel = (v.expenses||[]).filter(e => e.type==='fuel').reduce((s,e) => s + (e.amount||0), 0);
+      const maint = (v.expenses||[]).filter(e => e.type==='maintenance').reduce((s,e) => s + (e.amount||0), 0);
+      const trips = dispatches.filter(d => d.vehicleId === v.id).length;
+      return `<tr>
+        <td><strong>${v.no}</strong></td>
+        <td>${v.type || '—'}</td>
+        <td>${v.driver || '—'}</td>
+        <td>${fmt(v.salary)}</td>
+        <td style="color:#f59e0b;font-weight:600">${fmt(fuel)}</td>
+        <td style="color:#ef4444;font-weight:600">${fmt(maint)}</td>
+        <td><strong>${trips}</strong></td>
+        <td>
+          <button class="btn-icon success" onclick="openVExp('${v.id}')" title="Add Expense"><i class="bi bi-cash"></i></button>
+          <button class="btn-icon primary" onclick="editVehicle('${v.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn-icon danger" onclick="deleteVehicle('${v.id}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ EMPLOYEES ═════════
+  function resetEmpForm(){
+    document.getElementById('empIdInput').value = '';
+    document.getElementById('empTitle').textContent = 'Add Employee';
+    ['empName','empRole','empSalary','empPhone'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  function saveEmployee(){
+    const name = document.getElementById('empName').value.trim();
+    if(!name){ toast('Name required','error'); return; }
+    const emps = DB.get('employees', []);
+    const id = document.getElementById('empIdInput').value;
+    const data = {
+      id: id || 'EM'+Date.now(),
+      name,
+      role: document.getElementById('empRole').value.trim(),
+      salary: parseFloat(document.getElementById('empSalary').value) || 0,
+      phone: document.getElementById('empPhone').value.trim()
+    };
+    if(id){ const idx = emps.findIndex(e => e.id === id); data.advances = emps[idx].advances || []; emps[idx] = data; }
+    else { data.advances = []; emps.push(data); }
+    DB.set('employees', emps);
+    bootstrap.Modal.getInstance(document.getElementById('empModal')).hide();
+    renderEmployees();
+    toast('Employee save');
+  }
+
+  function editEmp(id){
+    const e = DB.get('employees', []).find(x => x.id === id);
+    document.getElementById('empIdInput').value = e.id;
+    document.getElementById('empTitle').textContent = 'Edit Employee';
+    document.getElementById('empName').value = e.name;
+    document.getElementById('empRole').value = e.role;
+    document.getElementById('empSalary').value = e.salary;
+    document.getElementById('empPhone').value = e.phone;
+    new bootstrap.Modal(document.getElementById('empModal')).show();
+  }
+
+  function deleteEmp(id){
+    if(!confirm('Delete?')) return;
+    let e = DB.get('employees', []);
+    e = e.filter(x => x.id !== id);
+    DB.set('employees', e);
+    renderEmployees();
+  }
+
+  function openEmpAdv(eid){
+    document.getElementById('empAdvId').value = eid;
+    document.getElementById('empAdvDate').value = todayStr();
+    document.getElementById('empAdvType').value = 'advance';
+    document.getElementById('empAdvAmount').value = '';
+    document.getElementById('empAdvNote').value = '';
+    new bootstrap.Modal(document.getElementById('empAdvModal')).show();
+  }
+
+  function saveEmpAdvance(){
+    const eid = document.getElementById('empAdvId').value;
+    const amount = parseFloat(document.getElementById('empAdvAmount').value) || 0;
+    if(amount <= 0){ toast('Amount enter karein','error'); return; }
+    const emps = DB.get('employees', []);
+    const e = emps.find(x => x.id === eid);
+    e.advances = e.advances || [];
+    e.advances.push({
+      id: 'EA'+Date.now(),
+      date: document.getElementById('empAdvDate').value || todayStr(),
+      type: document.getElementById('empAdvType').value,
+      amount,
+      note: document.getElementById('empAdvNote').value.trim()
+    });
+    DB.set('employees', emps);
+    bootstrap.Modal.getInstance(document.getElementById('empAdvModal')).hide();
+    renderEmployees();
+    toast('Add ho gaya');
+  }
+
+  function renderEmployees(){
+    const emps = DB.get('employees', []);
+    const tbody = document.getElementById('empTable');
+    if(emps.length === 0){
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><i class="bi bi-people"></i><p>Abhi koi employee nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = emps.map(e => {
+      const adv = (e.advances||[]).filter(a => a.type==='advance').reduce((s,a) => s + (a.amount||0), 0);
+      return `<tr>
+        <td><strong>${e.name}</strong></td>
+        <td>${e.role || '—'}</td>
+        <td style="color:#d97706;font-weight:700">${fmt(e.salary)}</td>
+        <td style="color:#ef4444;font-weight:600">${fmt(adv)}</td>
+        <td>${e.phone || '—'}</td>
+        <td>
+          <button class="btn-icon success" onclick="openEmpAdv('${e.id}')"><i class="bi bi-cash"></i></button>
+          <button class="btn-icon primary" onclick="editEmp('${e.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn-icon danger" onclick="deleteEmp('${e.id}')"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ EXPENSES ═════════
+  function resetExpForm(){
+    document.getElementById('expDate').value = todayStr();
+    document.getElementById('expDesc').value = '';
+    document.getElementById('expAmount').value = '';
+  }
+
+  function saveExpense(){
+    const desc = document.getElementById('expDesc').value.trim();
+    const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+    if(!desc || amount <= 0){ toast('Desc aur amount zaruri','error'); return; }
+    const expenses = DB.get('expenses', []);
+    expenses.push({
+      id: 'E'+Date.now(),
+      date: document.getElementById('expDate').value || todayStr(),
+      category: document.getElementById('expCategory').value,
+      desc,
+      amount
+    });
+    DB.set('expenses', expenses);
+    bootstrap.Modal.getInstance(document.getElementById('expModal')).hide();
+    renderExpenses();
+    toast('Expense save');
+  }
+
+  function deleteExpense(id){
+    if(!confirm('Delete?')) return;
+    let e = DB.get('expenses', []);
+    e = e.filter(x => x.id !== id);
+    DB.set('expenses', e);
+    renderExpenses();
+  }
+
+  function renderExpenses(){
+    const expenses = DB.get('expenses', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const tbody = document.getElementById('expTable');
+    if(expenses.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><i class="bi bi-receipt"></i><p>Abhi koi expense nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = expenses.map(e => `
+      <tr>
+        <td>${fmtDate(e.date)}</td>
+        <td><span class="badge-st b-partial">${e.category}</span></td>
+        <td>${e.desc}</td>
+        <td style="color:#ef4444;font-weight:700">${fmt(e.amount)}</td>
+        <td><button class="btn-icon danger" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>
+    `).join('');
+  }
+
+  // ═════════ ACCOUNTS ═════════
+  function resetAccForm(){
+    document.getElementById('accDate').value = todayStr();
+    document.getElementById('accDesc').value = '';
+    document.getElementById('accAmount').value = '';
+  }
+
+  function saveAcc(){
+    const desc = document.getElementById('accDesc').value.trim();
+    const amount = parseFloat(document.getElementById('accAmount').value) || 0;
+    if(!desc || amount <= 0){ toast('Desc aur amount zaruri','error'); return; }
+    const acc = DB.get('accounts', []);
+    acc.push({
+      id: 'AC'+Date.now(),
+      date: document.getElementById('accDate').value || todayStr(),
+      type: document.getElementById('accType').value,
+      desc,
+      amount,
+      mode: document.getElementById('accMode').value
+    });
+    DB.set('accounts', acc);
+    bootstrap.Modal.getInstance(document.getElementById('accModal')).hide();
+    renderAccounts();
+    toast('Transaction save');
+  }
+
+  function deleteAcc(id){
+    if(!confirm('Delete?')) return;
+    let a = DB.get('accounts', []);
+    a = a.filter(x => x.id !== id);
+    DB.set('accounts', a);
+    renderAccounts();
+  }
+
+  function renderAccounts(){
+    const acc = DB.get('accounts', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const sales = DB.get('sales', []);
+    const expenses = DB.get('expenses', []);
+
+    // monthly stats - include sales paid as cash in, expenses as cash out
+    const monthAcc = acc.filter(a => isThisMonth(a.date));
+    const monthSales = sales.filter(s => isThisMonth(s.date));
+    const monthExp = expenses.filter(e => isThisMonth(e.date));
+
+    const cashIn = monthAcc.filter(a => a.type==='in' || a.type==='recovery').reduce((s,a) => s + (a.amount||0), 0)
+                 + monthSales.reduce((s,x) => s + (x.paid||0), 0);
+    const cashOut = monthAcc.filter(a => a.type==='out' || a.type==='supplier').reduce((s,a) => s + (a.amount||0), 0)
+                  + monthExp.reduce((s,e) => s + (e.amount||0), 0);
+    const balance = cashIn - cashOut;
+    const receivable = sales.reduce((s,x) => s + Math.max(0, (x.total||0) - (x.paid||0)), 0);
+
+    document.getElementById('accCashIn').textContent = fmt(cashIn);
+    document.getElementById('accCashOut').textContent = fmt(cashOut);
+    document.getElementById('accBalance').textContent = fmt(balance);
+    document.getElementById('accReceivable').textContent = fmt(receivable);
+
+    const tbody = document.getElementById('accTable');
+    if(acc.length === 0){
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><i class="bi bi-bank"></i><p>Abhi koi transaction nahi</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = acc.map(a => {
+      const isIn = a.type === 'in' || a.type === 'recovery';
+      return `<tr>
+        <td>${fmtDate(a.date)}</td>
+        <td><span class="badge-st ${isIn?'b-in':'b-out'}">${a.type}</span></td>
+        <td>${a.desc}</td>
+        <td style="color:${isIn?'#10b981':'#ef4444'};font-weight:700">${isIn?'+':'-'}${fmt(a.amount)}</td>
+        <td>${a.mode}</td>
+        <td><button class="btn-icon danger" onclick="deleteAcc('${a.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ REPORTS ═════════
+  function renderReports(){
+    const productions = DB.get('productions', []).filter(p => isThisMonth(p.date));
+    const sales = DB.get('sales', []).filter(s => isThisMonth(s.date));
+    const expenses = DB.get('expenses', []).filter(e => isThisMonth(e.date));
+    const types = DB.get('blockTypes', []);
+    const items = DB.get('rawItems', []);
+
+    // Production report
+    const prodByType = {};
+    productions.forEach(p => {
+      prodByType[p.blockId] = (prodByType[p.blockId] || 0) + (p.qty || 0);
+    });
+    const totalProd = Object.values(prodByType).reduce((s,n) => s+n, 0) || 1;
+    document.getElementById('prodReport').innerHTML = types.length === 0 ? '<div class="empty"><p>No data</p></div>' :
+      types.map(t => {
+        const q = prodByType[t.id] || 0;
+        return `<div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><strong>${t.name}</strong><span style="font-weight:700">${fmtN(q)}</span></div>
+          <div class="stock-bar"><div class="stock-bar-fill" style="width:${q/totalProd*100}%;background:#d97706"></div></div>
+        </div>`;
+      }).join('') + `<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px"><strong>Total Produced: ${fmtN(Object.values(prodByType).reduce((s,n)=>s+n,0))}</strong></div>`;
+
+    // Sales report
+    const salesByType = {};
+    let totalSaleAmt = 0;
+    sales.forEach(s => {
+      salesByType[s.blockId] = (salesByType[s.blockId] || 0) + (s.qty || 0);
+      totalSaleAmt += s.total || 0;
+    });
+    document.getElementById('salesReport').innerHTML = types.length === 0 ? '<div class="empty"><p>No data</p></div>' :
+      types.map(t => {
+        const q = salesByType[t.id] || 0;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9">
+          <span><strong>${t.name}</strong></span>
+          <span>${fmtN(q)} units</span>
+        </div>`;
+      }).join('') + `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><strong style="color:#10b981">Total Sales: ${fmt(totalSaleAmt)}</strong></div>`;
+
+    // Raw material consumption
+    const rmUsed = {};
+    productions.forEach(p => {
+      (p.materials || []).forEach(m => {
+        rmUsed[m.itemId] = (rmUsed[m.itemId] || 0) + (m.qty || 0);
+      });
+    });
+    document.getElementById('rmReport').innerHTML = items.length === 0 ? '<div class="empty"><p>No data</p></div>' :
+      items.map(i => {
+        const q = rmUsed[i.id] || 0;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9">
+          <strong>${i.name}</strong>
+          <span style="color:#7c3aed;font-weight:700">${fmtN(q)} ${i.unit}</span>
+        </div>`;
+      }).join('');
+
+    // P&L
+    const income = sales.reduce((s,x) => s + (x.paid||0), 0);
+    const totalExp = expenses.reduce((s,e) => s + (e.amount||0), 0);
+    const rmCost = DB.get('rawPurchases', []).filter(p => isThisMonth(p.date)).reduce((s,p) => s + (p.price||0), 0);
+    const profit = income - totalExp - rmCost;
+    document.getElementById('plReport').innerHTML = `
+      <div style="background:#d1fae5;padding:14px;border-radius:10px;margin-bottom:10px">
+        <div style="font-size:.78rem;color:#065f46;font-weight:600">Total Income (Received)</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#065f46">${fmt(income)}</div>
+      </div>
+      <div style="background:#fee2e2;padding:14px;border-radius:10px;margin-bottom:10px">
+        <div style="font-size:.78rem;color:#991b1b;font-weight:600">Total Expenses</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#991b1b">${fmt(totalExp + rmCost)}</div>
+        <div style="font-size:.72rem;color:#7f1d1d">Factory: ${fmt(totalExp)} · Raw Material: ${fmt(rmCost)}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#d97706,#b45309);padding:14px;border-radius:10px;color:#fff">
+        <div style="font-size:.78rem;opacity:.85;font-weight:600">Net Profit</div>
+        <div style="font-size:1.7rem;font-weight:800">${fmt(profit)}</div>
+      </div>
+    `;
+  }
+
+  // ═════════ DASHBOARD ═════════
+  function renderDashboard(){
+    document.getElementById('todayDate').textContent = fmtDate(todayStr());
+
+    const productions = DB.get('productions', []);
+    const sales = DB.get('sales', []);
+    const expenses = DB.get('expenses', []);
+    const types = DB.get('blockTypes', []);
+    const items = DB.get('rawItems', []);
+
+    const todayProd = productions.filter(p => isToday(p.date)).reduce((s,p) => s + (p.qty||0), 0);
+    const todaySales = sales.filter(s => isToday(s.date)).reduce((s,x) => s + (x.total||0), 0);
+    const totalStock = types.reduce((s,t) => s + getBlockStock(t.id).available, 0);
+    const pendingOrders = sales.filter(s => (s.paid||0) < (s.total||0)).length;
+    const todayExp = expenses.filter(e => isToday(e.date)).reduce((s,e) => s + (e.amount||0), 0);
+
+    document.getElementById('dTodayProd').textContent = fmtN(todayProd);
+    document.getElementById('dTodaySale').textContent = fmt(todaySales);
+    document.getElementById('dStock').textContent = fmtN(totalStock);
+    document.getElementById('dPending').textContent = pendingOrders;
+    document.getElementById('dRawTypes').textContent = items.length;
+    document.getElementById('dTodayExp').textContent = fmt(todayExp);
+
+    document.getElementById('dRawValue').textContent = fmt(Math.round(rawRemainingValue()));
+    document.getElementById('dStockValue').textContent = fmt(Math.round(stockValue()));
+
+    const monthProd = productions.filter(p => isThisMonth(p.date)).reduce((s,p) => s + (p.qty||0), 0);
+    const monthSale = sales.filter(s => isThisMonth(s.date)).reduce((s,x) => s + (x.total||0), 0);
+    const monthExp = expenses.filter(e => isThisMonth(e.date)).reduce((s,e) => s + (e.amount||0), 0);
+    const profit = monthSale - monthExp;
+
+    document.getElementById('dMonthProd').textContent = fmtN(monthProd);
+    document.getElementById('dMonthSale').textContent = fmt(monthSale);
+    document.getElementById('dMonthExp').textContent = fmt(monthExp);
+    document.getElementById('dProfit').textContent = fmt(profit);
+
+    // Low stock alert
+    const lowItems = items.filter(i => getRawStock(i.id).available <= i.alert);
+    const alertBox = document.getElementById('lowStockAlert');
+    if(lowItems.length > 0){
+      alertBox.innerHTML = `<div class="alert-box danger">
+        <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> Low Stock Alert:</strong>
+        ${lowItems.map(i => `${i.name} (${getRawStock(i.id).available} ${i.unit})`).join(', ')}
+      </div>`;
+    } else { alertBox.innerHTML = ''; }
+
+    // Stock summary
+    if(types.length === 0){
+      document.getElementById('stockSummary').innerHTML = '<div class="empty"><i class="bi bi-boxes"></i><p>Stock tab se block types add karein</p></div>';
+    } else {
+      document.getElementById('stockSummary').innerHTML = types.map(t => {
+        const s = getBlockStock(t.id);
+        const val = Math.round(s.available * blockMaterialCost(t.id));
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9">
+          <strong>${t.name}</strong>
+          <span style="text-align:right">
+            <span style="font-weight:700;color:${s.available>0?'#2563eb':'#ef4444'}">${fmtN(s.available)}</span>
+            <span style="font-size:.78rem;color:#7c3aed;display:block">${fmt(val)}</span>
+          </span>
+        </div>`;
+      }).join('');
+    }
+
+    // Raw summary
+    if(items.length === 0){
+      document.getElementById('rawSummary').innerHTML = '<div class="empty"><i class="bi bi-box-seam"></i><p>Raw Material tab se items add karein</p></div>';
+    } else {
+      document.getElementById('rawSummary').innerHTML = items.map(i => {
+        const s = getRawStock(i.id);
+        const isLow = s.available <= i.alert;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9">
+          <strong>${i.name}</strong>
+          <span style="font-weight:700;color:${isLow?'#ef4444':'#2563eb'}">${fmtN(s.available)} ${i.unit}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ═════════ INIT ═════════
+  document.body.style.opacity = '0.3';
+  document.body.style.pointerEvents = 'none';
+
+  waitForBMS(async () => {
+    await loadInitialData();
+    document.body.style.opacity = '1';
+    document.body.style.pointerEvents = 'auto';
+    renderDashboard();
+  });
+</script>
+</body>
+</html>

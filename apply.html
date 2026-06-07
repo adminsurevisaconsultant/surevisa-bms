@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Apply Online – Sure Visa Consultant</title>
+<meta name="description" content="Apply for visa online. Upload documents and get instant tracking code. No signup required."/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css"/>
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb-nav">
+      <a href="index.html"><i class="bi bi-house-fill"></i> Home</a>
+      <i class="bi bi-chevron-right" style="font-size:.7rem"></i>
+      <span>Apply Visa</span>
+    </div>
+    <h1>Apply for Your <span>Visa Online</span></h1>
+    <p>Fill the form, upload your documents, and get your unique tracking code instantly. No signup required — track your application anytime with your code.</p>
+  </div>
+</section>
+
+<section class="section apply-section" style="background:#fff">
+  <div class="container">
+    <div class="apply-grid">
+      <div class="apply-left" style="color:var(--navy)">
+        <span style="color:var(--orange);font-weight:700;font-size:.75rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:block">Quick Application</span>
+        <h2 style="color:var(--navy)">Start Your <span style="color:var(--orange)">Visa Application</span> Today</h2>
+        <p style="color:var(--muted)">Fill the form below to begin. You'll receive a unique tracking code instantly — use it with your CNIC or passport to check status anytime.</p>
+        <ul class="apply-list" style="color:var(--text)">
+          <li style="color:var(--text)"><i class="bi bi-check-circle-fill"></i> No signup required</li>
+          <li style="color:var(--text)"><i class="bi bi-check-circle-fill"></i> Get unique tracking code instantly</li>
+          <li style="color:var(--text)"><i class="bi bi-check-circle-fill"></i> Upload all documents online</li>
+          <li style="color:var(--text)"><i class="bi bi-check-circle-fill"></i> Track status anytime via portal</li>
+          <li style="color:var(--text)"><i class="bi bi-check-circle-fill"></i> Direct contact via WhatsApp</li>
+        </ul>
+        <div style="background:#f0fdf4;border-left:4px solid var(--success);padding:14px 18px;border-radius:8px;margin-top:20px">
+          <strong style="color:#064e3b;font-size:.9rem"><i class="bi bi-shield-check me-1"></i> Your data is secure.</strong>
+          <p style="margin:4px 0 0;font-size:.82rem;color:#065f46">Documents are encrypted and stored securely. Only our authorized team can access your information.</p>
+        </div>
+      </div>
+
+      <div class="apply-form-card">
+        <h3>Visa Application Form</h3>
+        <p class="sub">Fill the details and upload documents below</p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-control" id="aName" placeholder="e.g. Ahmed Ali"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Father Name</label>
+            <input type="text" class="form-control" id="aFather"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">CNIC *</label>
+            <input type="text" class="form-control" id="aCnic" placeholder="35201-1234567-8"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Passport No</label>
+            <input type="text" class="form-control" id="aPassport"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mobile *</label>
+            <input type="text" class="form-control" id="aMobile" placeholder="0300-1234567"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="aEmail"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-control" id="aAddress"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Visa Type *</label>
+            <select class="form-select" id="aType">
+              <option value="work">Work Visa / Work Permit</option>
+              <option value="study">Study Visa</option>
+              <option value="visit">Visit / Tourist Visa</option>
+              <option value="business">Business Visit Visa</option>
+              <option value="family">Family Visit Visa</option>
+              <option value="umrah">Umrah Visa</option>
+              <option value="investor">Investor Visa</option>
+              <option value="transit">Transit Visa</option>
+              <option value="other">Other (mention in note)</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Country *</label>
+            <input type="text" class="form-control" id="aCountry" list="countryList" placeholder="Type or select country" autocomplete="off"/>
+            <datalist id="countryList"></datalist>
+            <small style="color:#64748b;font-size:.75rem;display:block;margin-top:4px">Type to search or write any country name</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Upload Documents</label>
+            <div class="file-input-wrap">
+              <input type="file" id="aDocs" multiple accept="image/*,application/pdf,.doc,.docx" onchange="showFiles()"/>
+              <label for="aDocs" class="file-input-label">
+                <i class="bi bi-cloud-upload-fill"></i> Click to upload (Passport, Photo, CV, etc.)
+              </label>
+              <div class="file-list" id="fileList"></div>
+            </div>
+            <small style="color:#64748b;font-size:.78rem">Multiple files allowed. JPG, PNG, PDF, DOC. Max 10 MB per file.</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Additional Note (optional)</label>
+            <textarea class="form-control" id="aNote" rows="2" placeholder="Any specific requirement or message..."></textarea>
+          </div>
+          <div class="col-12">
+            <button class="btn-submit" onclick="submitApplication()">
+              <i class="bi bi-send-fill"></i> Submit Application
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS MODAL -->
+<div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;padding:32px;text-align:center">
+      <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+      <h3 style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--navy);margin-bottom:8px">Application Submitted!</h3>
+      <p style="color:var(--muted);font-size:.92rem;margin-bottom:0">Your application has been received. Please save your tracking code.</p>
+      <div class="track-code-display">
+        <div class="label">Your Tracking Code</div>
+        <div class="code" id="resultCode">VIS-2026-001</div>
+      </div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:18px"><strong>Important:</strong> Save this code. Use it with your CNIC/Passport to check your application status anytime.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="client-portal.html" style="flex:1;background:var(--navy);color:#fff;padding:12px;border-radius:8px;font-weight:700;text-decoration:none">
+          <i class="bi bi-search me-1"></i> Check Status
+        </a>
+        <button class="btn-submit" data-bs-dismiss="modal" style="flex:1;background:var(--orange)">
+          <i class="bi bi-check me-1"></i> Done
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="firebase-config.js"></script>
+<script src="site-layout.js"></script>
+<script src="countries-data.js"></script>
+<script>
+  function waitForBMS(cb, tries=0){
+    if(window.BMS) return cb();
+    if(tries > 50) return cb();
+    setTimeout(() => waitForBMS(cb, tries+1), 100);
+  }
+
+  // Full country list (datalist suggestions — user can also type custom)
+  const ALL_COUNTRIES = [
+    'Afghanistan','Albania','Algeria','Argentina','Armenia','Australia','Austria','Azerbaijan',
+    'Bahrain','Bangladesh','Belarus','Belgium','Brazil','Bulgaria','Cambodia','Canada','Chile',
+    'China','Croatia','Cyprus','Czechia','Denmark','Egypt','Estonia','Finland','France','Georgia',
+    'Germany','Greece','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland',
+    'Italy','Japan','Jordan','Kazakhstan','Kenya','Kuwait','Latvia','Lebanon','Libya','Lithuania',
+    'Luxembourg','Malaysia','Maldives','Malta','Mexico','Moldova','Morocco','Nepal','Netherlands',
+    'New Zealand','Nigeria','North Macedonia','Norway','Oman','Pakistan','Palestine','Philippines',
+    'Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Serbia','Singapore','Slovakia',
+    'Slovenia','South Africa','South Korea','Spain','Sri Lanka','Sudan','Sweden','Switzerland',
+    'Syria','Taiwan','Tajikistan','Thailand','Tunisia','Turkey','Turkmenistan','UAE','UK','Ukraine',
+    'United States (USA)','Uruguay','Uzbekistan','Vietnam','Yemen'
+  ];
+
+  // ────── Populate country datalist ──────
+  function populateCountries(){
+    const dl = document.getElementById('countryList');
+    if(!dl) return;
+
+    // Combine: our offered countries first (with flag), then all other countries
+    const offered = COUNTRIES.map(c => `${c.flag||''} ${c.name}`.trim());
+    const offeredNames = new Set(COUNTRIES.map(c => c.name.toLowerCase()));
+    const others = ALL_COUNTRIES.filter(n => !offeredNames.has(n.toLowerCase()));
+
+    dl.innerHTML =
+      offered.map(name => `<option value="${name}">`).join('') +
+      others.map(name => `<option value="${name}">`).join('');
+
+    // Pre-fill from URL params (when coming from country detail)
+    const params = new URLSearchParams(window.location.search);
+    const country = params.get('country');
+    const type = params.get('type');
+    if(country){
+      // Try matching with flag prefix
+      const offered = COUNTRIES.find(c => c.name.toLowerCase() === country.toLowerCase());
+      document.getElementById('aCountry').value = offered ? `${offered.flag||''} ${offered.name}`.trim() : country;
+    }
+    if(type) document.getElementById('aType').value = type;
+  }
+
+  function showFiles(){
+    const files = document.getElementById('aDocs').files;
+    const list = document.getElementById('fileList');
+    if(files.length === 0){ list.textContent = ''; return; }
+    let oversized = [];
+    Array.from(files).forEach(f => {
+      if(f.size > 10 * 1024 * 1024) oversized.push(f.name);
+    });
+    if(oversized.length){
+      list.innerHTML = `<div style="color:#dc2626"><i class="bi bi-exclamation-triangle me-1"></i> These files are over 10 MB: ${oversized.join(', ')} — please reduce size</div>`;
+      return;
+    }
+    list.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${files.length} file(s) selected: ` +
+      Array.from(files).map(f => `${f.name} (${(f.size/1024/1024).toFixed(1)} MB)`).join(', ');
+  }
+
+  async function generateTrackingCode(){
+    let clients = [];
+    try {
+      const doc = await window.BMS.getOne('businesses', 'visa');
+      clients = (doc && doc.clients) || [];
+    } catch(e){ console.error('Track code load error:', e); }
+    const year = new Date().getFullYear();
+    const prefix = `VIS-${year}-`;
+    let max = 0;
+    clients.forEach(c => {
+      if(c.trackCode && c.trackCode.startsWith(prefix)){
+        const n = parseInt(c.trackCode.split('-')[2]) || 0;
+        if(n > max) max = n;
+      }
+    });
+    return prefix + String(max+1).padStart(3,'0');
+  }
+
+  async function submitApplication(){
+    const name = document.getElementById('aName').value.trim();
+    const cnic = document.getElementById('aCnic').value.trim();
+    const mobile = document.getElementById('aMobile').value.trim();
+    // Strip flag emoji prefix and trim (datalist values come as "🇵🇱 Poland")
+    let country = document.getElementById('aCountry').value.trim();
+    // Remove leading emoji + space
+    country = country.replace(/^[^\w(]+\s*/, '').trim();
+
+    if(!name || !cnic || !mobile || !country){
+      toast('Please fill all required fields (Name, CNIC, Mobile, Country)','error');
+      return;
+    }
+
+    if(!window.BMS){
+      toast('Connecting to server, please wait...', 'error');
+      return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    const originalBtn = btn.innerHTML;
+    btn.disabled = true;
+
+    try {
+      const files = document.getElementById('aDocs').files;
+
+      for(const f of files){
+        if(f.size > 10 * 1024 * 1024){
+          toast(`File "${f.name}" is over 10 MB. Please reduce size.`, 'error');
+          btn.disabled = false; btn.innerHTML = originalBtn;
+          return;
+        }
+      }
+
+      let uploadedDocs = [];
+      if(files.length > 0){
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Uploading ${files.length} file(s)...`;
+        const folder = 'visa/' + Date.now() + '_' + name.replace(/[^a-zA-Z0-9]/g, '_');
+        uploadedDocs = await window.BMS.uploadFiles(folder, Array.from(files));
+      }
+
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving application...';
+
+      const trackCode = await generateTrackingCode();
+      const type = document.getElementById('aType').value;
+      const note = document.getElementById('aNote').value.trim();
+      const fatherName = document.getElementById('aFather').value.trim();
+      const passport = document.getElementById('aPassport').value.trim();
+      const email = document.getElementById('aEmail').value.trim();
+      const address = document.getElementById('aAddress').value.trim();
+
+      const newClient = {
+        id: 'C'+Date.now(),
+        trackCode, name, father: fatherName, cnic, passport, mobile, email, address,
+        type, country,
+        status: 'New Application',
+        statusNote: 'Application received online. Documents under review.',
+        statusUpdatedAt: new Date().toISOString(),
+        total: 0, currency: 'PKR', paid: 0,
+        notes: note,
+        createdAt: new Date().toISOString(),
+        source: 'website',
+        payments: [],
+        documents: uploadedDocs,
+        cases: [{
+          id: 'K'+Date.now(),
+          date: new Date().toISOString().split('T')[0],
+          desc: `Application submitted via website. Visa: ${type}, Country: ${country}.` +
+                (uploadedDocs.length ? ` ${uploadedDocs.length} document(s) uploaded.` : '')
+        }],
+        amounts: []
+      };
+
+      const visaDoc = await window.BMS.getOne('businesses', 'visa') || {};
+      const clients = visaDoc.clients || [];
+      clients.push(newClient);
+
+      const updated = { ...visaDoc, clients, updatedAt: new Date().toISOString() };
+      delete updated.id;
+      await window.BMS.set('businesses', 'visa', updated);
+
+      document.getElementById('resultCode').textContent = trackCode;
+      new bootstrap.Modal(document.getElementById('successModal')).show();
+
+      ['aName','aFather','aCnic','aPassport','aMobile','aEmail','aAddress','aNote'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('aDocs').value = '';
+      document.getElementById('fileList').textContent = '';
+      document.getElementById('aType').value = 'work';
+      document.getElementById('aCountry').value = '';
+
+    } catch(e){
+      console.error('Submit failed:', e);
+      toast('Submit failed: ' + (e.message || 'Check internet'), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalBtn;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    populateCountries();
+    waitForBMS(async () => {
+      await loadSiteContent();
+      populateCountries();
+    });
+  });
+</script>
+</body>
+</html>

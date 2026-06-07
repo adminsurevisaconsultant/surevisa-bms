@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Countries We Serve – Sure Visa Consultant</title>
+<meta name="description" content="20+ countries — Work permits, study & visit visas across Europe, Middle East, North America and more."/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css"/>
+</head>
+<body>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb-nav">
+      <a href="index.html"><i class="bi bi-house-fill"></i> Home</a>
+      <i class="bi bi-chevron-right" style="font-size:.7rem"></i>
+      <span>Countries</span>
+    </div>
+    <h1>20+ <span>Destinations</span> Worldwide</h1>
+    <p>From Europe to Middle East to North America — explore all the countries we serve. Click any country to see jobs, salary, required documents and apply directly.</p>
+  </div>
+</section>
+
+<!-- COUNTRIES -->
+<section class="section">
+  <div class="container">
+    <div class="filter-tabs">
+      <button class="filter-btn active" onclick="filterCountries('all', this)">All Countries</button>
+      <button class="filter-btn" onclick="filterCountries('work', this)">Work Permit</button>
+      <button class="filter-btn" onclick="filterCountries('visit', this)">Visit Visa</button>
+      <button class="filter-btn" onclick="filterCountries('business', this)">Business</button>
+      <button class="filter-btn" onclick="filterCountries('study', this)">Study Visa</button>
+    </div>
+    <div class="row g-4" id="countryGrid"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <div class="container">
+    <h3>Can't Find Your Country?<span>Contact us — we may still be able to help</span></h3>
+    <div class="btns">
+      <a href="https://wa.me/923474402416" class="btn-w" target="_blank"><i class="bi bi-whatsapp me-1"></i> WhatsApp Us</a>
+      <a href="contact.html" class="btn-out"><i class="bi bi-telephone me-1"></i> Contact</a>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTRY DETAIL MODAL -->
+<div class="modal fade" id="cdModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden">
+      <div id="cdContent"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="firebase-config.js"></script>
+<script src="site-layout.js"></script>
+<script src="countries-data.js"></script>
+<script>
+  function waitForBMS(cb, tries=0){
+    if(window.BMS) return cb();
+    if(tries > 30) return cb();
+    setTimeout(() => waitForBMS(cb, tries+1), 100);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCountriesGrid('all', 'countryGrid');
+    waitForBMS(async () => {
+      await loadSiteContent();
+      renderCountriesGrid('all', 'countryGrid');
+    });
+  });
+</script>
+</body>
+</html>

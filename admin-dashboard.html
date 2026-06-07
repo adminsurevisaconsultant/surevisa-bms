@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BMS Admin – Super Dashboard</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#f5f6fa; --card:#fff; --text:#0f172a; --muted:#64748b;
+    --border:#e2e8f0; --primary:#4f46e5; --primary-dark:#4338ca;
+    --visa:#2563eb; --blocks:#d97706; --basement:#7c3aed; --floor1:#059669;
+    --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+    --sidebar:#0f172a; --sidebar-active:#1e293b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* LOGIN */
+  #loginPage{min-height:100vh;background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+    display:flex;align-items:center;justify-content:center;padding:20px}
+  .login-card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:420px;
+    box-shadow:0 25px 60px rgba(0,0,0,.4)}
+  .login-logo{font-size:2.2rem;font-weight:800;color:#0f172a;letter-spacing:-1px;text-align:center}
+  .login-logo span{color:var(--primary)}
+  .login-sub{color:var(--muted);font-size:.88rem;margin-bottom:28px;text-align:center}
+  .login-card .form-control{border-radius:10px;border:2px solid var(--border);padding:12px 14px;font-size:.92rem}
+  .login-card .form-control:focus{border-color:var(--primary);box-shadow:none}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:1rem;margin-top:8px}
+  .btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(79,70,229,.4)}
+  .role-tag{display:inline-block;padding:4px 10px;background:#ede9fe;color:#5b21b6;
+    border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+  /* APP */
+  #mainApp{display:none}
+  #sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:var(--sidebar);
+    color:#cbd5e1;padding:24px 0;overflow-y:auto;z-index:1000;transition:transform .3s}
+  .brand{padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+  .brand h5{color:#fff;font-weight:800;font-size:1.3rem;letter-spacing:-.5px;margin:0}
+  .brand h5 span{color:var(--primary)}
+  .brand small{color:#64748b;font-size:.72rem;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+  .nav-section{padding:8px 16px}
+  .nav-label{padding:8px 8px;font-size:.7rem;color:#64748b;text-transform:uppercase;
+    letter-spacing:1px;font-weight:700}
+  .nav-link-side{display:flex;align-items:center;gap:12px;padding:11px 14px;color:#cbd5e1;
+    background:transparent;border:none;border-radius:8px;font-size:.9rem;font-weight:600;
+    width:100%;text-align:left;cursor:pointer;transition:all .15s;margin-bottom:2px}
+  .nav-link-side:hover{background:var(--sidebar-active);color:#fff}
+  .nav-link-side.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+  .nav-link-side i{font-size:1.05rem;width:18px}
+  .biz-dot{width:8px;height:8px;border-radius:50%;margin-left:auto}
+
+  #topbar{position:fixed;top:0;left:260px;right:0;height:68px;background:#fff;
+    border-bottom:1px solid var(--border);display:flex;align-items:center;
+    justify-content:space-between;padding:0 28px;z-index:999}
+  .page-title{font-size:1.15rem;font-weight:700;color:var(--text)}
+  .page-sub{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .top-right{display:flex;align-items:center;gap:14px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7c3aed);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+  .icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative}
+  .icon-btn:hover{background:#f8fafc}
+  .notif-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--danger);border-radius:50%}
+
+  #content{margin-left:260px;margin-top:68px;padding:28px;min-height:calc(100vh - 68px)}
+  .page{display:none}
+  .page.active{display:block;animation:fadeIn .25s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* STAT CARDS */
+  .stat-card{background:#fff;border-radius:14px;padding:20px;border:1px solid var(--border);transition:all .2s}
+  .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+    justify-content:center;font-size:1.3rem;margin-bottom:14px}
+  .stat-value{font-size:1.8rem;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1}
+  .stat-label{font-size:.82rem;color:var(--muted);margin-top:6px;font-weight:600}
+  .stat-trend{font-size:.75rem;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;gap:4px}
+  .trend-up{color:var(--success)}
+  .trend-down{color:var(--danger)}
+  .trend-neutral{color:var(--warning)}
+
+  /* BIZ CARDS */
+  .section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+    color:var(--muted);margin:8px 0 14px}
+  .biz-card{border-radius:16px;padding:22px;color:#fff;cursor:pointer;transition:all .25s;
+    position:relative;overflow:hidden;min-height:160px;display:flex;flex-direction:column;justify-content:space-between}
+  .biz-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;
+    background:rgba(255,255,255,.1);border-radius:50%}
+  .biz-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.18)}
+  .biz-card .biz-icon{font-size:2.2rem;margin-bottom:8px;position:relative;z-index:1}
+  .biz-card h4{font-size:1.1rem;font-weight:700;margin:0;position:relative;z-index:1}
+  .biz-card p{font-size:.78rem;opacity:.9;margin:4px 0 12px;position:relative;z-index:1}
+  .biz-stats{display:flex;gap:14px;font-size:.78rem;position:relative;z-index:1}
+  .biz-stats div{flex:1}
+  .biz-stats strong{display:block;font-size:1.05rem;font-weight:800}
+  .biz-stats span{opacity:.85;font-size:.7rem}
+
+  /* TABLE */
+  .table-card{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+  .table-head{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .table-head h6{font-weight:700;font-size:.95rem;margin:0}
+  .table-responsive{overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:.85rem}
+  table.t thead th{background:#f8fafc;padding:12px 18px;font-weight:700;color:#475569;
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;
+    border-bottom:1px solid var(--border)}
+  table.t tbody td{padding:13px 18px;border-bottom:1px solid #f1f5f9;color:#334155}
+  table.t tbody tr:hover{background:#fafbfc}
+  table.t tbody tr:last-child td{border-bottom:none}
+
+  .badge-st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+  .b-paid{background:#d1fae5;color:#065f46}
+  .b-partial{background:#fef3c7;color:#92400e}
+  .b-pending{background:#fee2e2;color:#991b1b}
+  .b-active{background:#dbeafe;color:#1d4ed8}
+
+  .btn-pri{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+    border:none;border-radius:8px;padding:9px 16px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(79,70,229,.35)}
+  .btn-out{background:#fff;color:#475569;border:1.5px solid var(--border);border-radius:8px;
+    padding:8px 14px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-out:hover{border-color:var(--primary);color:var(--primary)}
+  .btn-icon{background:#f1f5f9;border:none;border-radius:6px;padding:6px 9px;color:#475569;
+    cursor:pointer;font-size:.85rem;margin-right:4px}
+  .btn-icon:hover{background:#e2e8f0}
+  .btn-icon.danger{color:var(--danger)}
+
+  /* MODAL */
+  .modal-content{border-radius:14px;border:none}
+  .modal-header{padding:20px 24px;border-bottom:1px solid var(--border)}
+  .modal-title{font-weight:700;font-size:1rem}
+  .modal-body{padding:24px}
+  .form-label{font-weight:600;font-size:.82rem;color:#475569;margin-bottom:6px}
+  .form-control,.form-select{border-radius:8px;border:1.5px solid var(--border);padding:9px 12px;font-size:.88rem}
+  .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:none}
+
+  /* MOBILE */
+  #sidebarToggle{display:none}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998}
+  .overlay.active{display:block}
+  @media(max-width:768px){
+    #sidebar{transform:translateX(-100%)}
+    #sidebar.open{transform:translateX(0)}
+    #topbar{left:0;padding:0 18px}
+    #content{margin-left:0;padding:18px}
+    #sidebarToggle{display:flex}
+    .stat-value{font-size:1.4rem}
+    .biz-card{min-height:140px;padding:18px}
+  }
+
+  /* CHART */
+  .chart-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:22px}
+  .chart-bar{display:flex;align-items:flex-end;gap:10px;height:180px;margin-top:20px}
+  .chart-bar .bar{flex:1;background:linear-gradient(180deg,var(--primary),#7c3aed);
+    border-radius:6px 6px 0 0;position:relative;transition:all .3s}
+  .chart-bar .bar:hover{filter:brightness(1.1)}
+  .chart-bar .bar span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
+    font-size:.7rem;color:var(--muted);font-weight:600;white-space:nowrap}
+
+  .progress-row{margin-bottom:14px}
+  .progress-row .d-flex{display:flex;justify-content:space-between;margin-bottom:6px}
+  .progress-row .label{font-size:.85rem;font-weight:600}
+  .progress-row .val{font-size:.85rem;font-weight:700}
+  .progress{height:8px;background:#f1f5f9;border-radius:10px;overflow:hidden}
+  .progress-bar{height:100%;border-radius:10px}
+
+  /* EMPTY STATE */
+  .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty i{font-size:3rem;color:#cbd5e1;margin-bottom:12px;display:block}
+  .empty p{margin:6px 0;font-size:.9rem}
+
+  .toast-msg{position:fixed;top:80px;right:20px;background:var(--success);color:#fff;
+    padding:14px 20px;border-radius:10px;font-weight:600;font-size:.88rem;z-index:9999;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;animation:slideIn .3s}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .toast-msg.show{display:block}
+  .toast-msg.error{background:var(--danger)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginPage" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">BMS<span>.</span></div>
+    <div class="login-sub">Business Management System<br><span class="role-tag mt-2">Sign In</span></div>
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input type="text" class="form-control" id="loginUser" placeholder="admin or manager username" autocomplete="username"/>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+    </button>
+    <div class="mt-3 text-center" style="font-size:.78rem;color:#94a3b8">
+      Super Admin: <strong>admin</strong> / <strong>admin123</strong><br>
+      <span style="font-size:.72rem">Managers: use credentials assigned by admin</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN APP ═══════════ -->
+<div id="mainApp" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="brand">
+      <h5>BMS<span>.</span></h5>
+      <small>Super Admin</small>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <button class="nav-link-side active" onclick="showPage('home','Home Dashboard','Overview of all businesses',this)">
+        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+      </button>
+      <button class="nav-link-side" onclick="showPage('businesses','All Businesses','Manage 4 businesses',this)">
+        <i class="bi bi-building-fill"></i> Businesses
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Businesses</div>
+      <button class="nav-link-side" onclick="openBiz('visa')">
+        <i class="bi bi-airplane-fill" style="color:#60a5fa"></i> Sure Visa
+        <span class="biz-dot" style="background:#2563eb"></span>
+      </button>
+      <button class="nav-link-side" onclick="openBiz('blocks')">
+        <i class="bi bi-bricks" style="color:#fbbf24"></i> Blocks Factory
+        <span class="biz-dot" style="background:#d97706"></span>
+      </button>
+      <button class="nav-link-side" onclick="openBiz('basement')">
+        <i class="bi bi-circle-fill" style="color:#a78bfa"></i> Snooker Basement
+        <span class="biz-dot" style="background:#7c3aed"></span>
+      </button>
+      <button class="nav-link-side" onclick="openBiz('floor1')">
+        <i class="bi bi-circle" style="color:#34d399"></i> Snooker 1st Floor
+        <span class="biz-dot" style="background:#059669"></span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Management</div>
+      <button class="nav-link-side" onclick="showPage('visaclients','All Visa Clients','All visa clients list',this)">
+        <i class="bi bi-person-vcard-fill"></i> Visa Clients
+      </button>
+      <button class="nav-link-side" onclick="showPage('allsales','All Sales','Snooker + Blocks sales combined',this)">
+        <i class="bi bi-cash-stack"></i> All Sales
+      </button>
+      <button class="nav-link-side" onclick="showPage('managers','Manager Accounts','Create login for each business',this)">
+        <i class="bi bi-person-badge-fill"></i> Managers
+      </button>
+      <button class="nav-link-side" onclick="showPage('employees','All Employees','All staff across businesses',this)">
+        <i class="bi bi-people-fill"></i> Employees
+      </button>
+      <button class="nav-link-side" onclick="showPage('expenses','All Expenses','Combined expense view',this)">
+        <i class="bi bi-receipt"></i> Expenses
+      </button>
+      <button class="nav-link-side" onclick="showPage('reports','Reports','Financial reports',this)">
+        <i class="bi bi-bar-chart-fill"></i> Reports
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Account</div>
+      <button class="nav-link-side" onclick="showPage('settings','Settings','System settings',this)">
+        <i class="bi bi-gear-fill"></i> Settings
+      </button>
+      <button class="nav-link-side" onclick="doLogout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button id="sidebarToggle" class="icon-btn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+      </button>
+      <div>
+        <div class="page-title" id="pageTitle">Home Dashboard</div>
+        <div class="page-sub" id="pageSub">Overview of all businesses</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <button class="icon-btn"><i class="bi bi-bell"></i><span class="notif-dot"></span></button>
+      <div class="avatar">AD</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ── HOME DASHBOARD ── -->
+    <div class="page active" id="page-home">
+      <div class="section-label">Overview – All Businesses</div>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-cash-stack"></i></div>
+            <div class="stat-value" id="totalRevenue">₨0</div>
+            <div class="stat-label">Total Revenue (Month)</div>
+            <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> Live data</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ede9fe;color:#5b21b6"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-value" id="totalEmployees">0</div>
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-trend trend-neutral"><i class="bi bi-dash"></i> Across all businesses</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-person-check-fill"></i></div>
+            <div class="stat-value" id="totalClients">0</div>
+            <div class="stat-label">Active Clients</div>
+            <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> Visa clients</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2;color:#991b1b"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="stat-value" id="totalPending">₨0</div>
+            <div class="stat-label">Pending Payments</div>
+            <div class="stat-trend trend-down"><i class="bi bi-arrow-down-right"></i> Needs follow-up</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Select Business to Manage</div>
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="biz-card" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)"
+               onclick="openBiz('visa')">
+            <div>
+              <div class="biz-icon">✈️</div>
+              <h4>Sure Visa Consultant</h4>
+              <p>Work · Visit · Study Visas</p>
+            </div>
+            <div class="biz-stats">
+              <div><strong id="visaClients">0</strong><span>Clients</span></div>
+              <div><strong id="visaRev">₨0</strong><span>Revenue</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="biz-card" style="background:linear-gradient(135deg,#b45309,#f59e0b)"
+               onclick="openBiz('blocks')">
+            <div>
+              <div class="biz-icon">🏭</div>
+              <h4>Mian Blocks Factory</h4>
+              <p>Production & Sales</p>
+            </div>
+            <div class="biz-stats">
+              <div><strong id="blocksStock">0</strong><span>Stock</span></div>
+              <div><strong id="blocksRev">₨0</strong><span>Revenue</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="biz-card" style="background:linear-gradient(135deg,#5b21b6,#8b5cf6)"
+               onclick="openBiz('basement')">
+            <div>
+              <div class="biz-icon">🎱</div>
+              <h4>Snooker Basement</h4>
+              <p>Daily Sales & Credit</p>
+            </div>
+            <div class="biz-stats">
+              <div><strong id="basementSale">₨0</strong><span>Today</span></div>
+              <div><strong id="basementCredit">₨0</strong><span>Credit</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="biz-card" style="background:linear-gradient(135deg,#047857,#10b981)"
+               onclick="openBiz('floor1')">
+            <div>
+              <div class="biz-icon">🎱</div>
+              <h4>Snooker 1st Floor</h4>
+              <p>Daily Sales & Credit</p>
+            </div>
+            <div class="biz-stats">
+              <div><strong id="floor1Sale">₨0</strong><span>Today</span></div>
+              <div><strong id="floor1Credit">₨0</strong><span>Credit</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-lg-7">
+          <div class="chart-card">
+            <h6 style="font-weight:700;margin-bottom:6px">Revenue by Business</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin:0">Current month overview</p>
+            <div class="chart-bar" id="chartBars">
+              <div class="bar" style="height:60%;background:linear-gradient(180deg,#3b82f6,#1d4ed8)"><span>Visa</span></div>
+              <div class="bar" style="height:80%;background:linear-gradient(180deg,#f59e0b,#b45309)"><span>Blocks</span></div>
+              <div class="bar" style="height:35%;background:linear-gradient(180deg,#8b5cf6,#5b21b6)"><span>Basement</span></div>
+              <div class="bar" style="height:45%;background:linear-gradient(180deg,#10b981,#047857)"><span>1st Floor</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-5">
+          <div class="chart-card">
+            <h6 style="font-weight:700;margin-bottom:14px">Quick Actions</h6>
+            <button class="btn-pri w-100 mb-2" onclick="openBiz('visa')">
+              <i class="bi bi-plus-lg me-1"></i> Add New Visa Client
+            </button>
+            <button class="btn-out w-100 mb-2" onclick="openBiz('basement')">
+              <i class="bi bi-cash me-1"></i> Add Today's Sale
+            </button>
+            <button class="btn-out w-100 mb-2" onclick="openBiz('blocks')">
+              <i class="bi bi-box me-1"></i> Add Production Entry
+            </button>
+            <button class="btn-out w-100" onclick="showPageByName('managers','Manager Accounts','Create login for each business')">
+              <i class="bi bi-person-plus me-1"></i> Create Manager Login
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUSINESSES OVERVIEW ── -->
+    <div class="page" id="page-businesses">
+      <div class="section-label">All Businesses</div>
+      <div class="row g-3" id="bizGrid"></div>
+    </div>
+
+    <!-- ── VISA (placeholder, next phase will build full) ── -->
+    <div class="page" id="page-visa">
+      <div class="empty">
+        <i class="bi bi-airplane-fill" style="color:#2563eb"></i>
+        <h5 style="color:#0f172a;font-weight:700">Sure Visa Consultant Module</h5>
+        <p>Coming soon: Clients, Payments, Documents, Case Tracking, Office Expenses</p>
+        <button class="btn-pri mt-3" onclick="showPage('home','Home Dashboard','Overview of all businesses',null)">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ── BLOCKS ── -->
+    <div class="page" id="page-blocks">
+      <div class="empty">
+        <i class="bi bi-bricks" style="color:#d97706"></i>
+        <h5 style="color:#0f172a;font-weight:700">Mian Blocks Factory Module</h5>
+        <p>Production, Raw Material, Stock, Sales, Dispatch, Vehicle Management — coming soon</p>
+        <button class="btn-pri mt-3" onclick="showPage('home','Home Dashboard','Overview of all businesses',null)">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ── BASEMENT ── -->
+    <div class="page" id="page-basement">
+      <div class="empty">
+        <i class="bi bi-circle-fill" style="color:#7c3aed"></i>
+        <h5 style="color:#0f172a;font-weight:700">Snooker Basement Module</h5>
+        <p>Daily Sale, Credit Tracking, Expenses, Employees — coming soon</p>
+        <button class="btn-pri mt-3" onclick="showPage('home','Home Dashboard','Overview of all businesses',null)">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FLOOR1 ── -->
+    <div class="page" id="page-floor1">
+      <div class="empty">
+        <i class="bi bi-circle" style="color:#059669"></i>
+        <h5 style="color:#0f172a;font-weight:700">Snooker 1st Floor Module</h5>
+        <p>Daily Sale, Credit Tracking, Expenses, Employees — coming soon</p>
+        <button class="btn-pri mt-3" onclick="showPage('home','Home Dashboard','Overview of all businesses',null)">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MANAGERS ── -->
+    <div class="page" id="page-managers">
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <h6>Manager Accounts</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Create separate login for each business</p>
+          </div>
+          <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#mgrModal">
+            <i class="bi bi-plus-lg me-1"></i> Add Manager
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="t">
+            <thead>
+              <tr><th>#</th><th>Manager Name</th><th>Username</th><th>Password</th><th>Assigned Business</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="mgrTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALL VISA CLIENTS ── -->
+    <div class="page" id="page-visaclients">
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <h6>All Visa Clients</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">All visa clients list — Edit ke liye Visa module mein jayein</p>
+          </div>
+          <button class="btn-pri" onclick="openBiz('visa')">
+            <i class="bi bi-plus-lg me-1"></i> Add in Visa Module
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="t">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Track Code</th><th>Type</th><th>Country</th><th>Mobile</th><th>Total</th><th>Paid</th><th>Pending</th><th>Status</th><th>Docs</th><th>Action</th></tr>
+            </thead>
+            <tbody id="visaClientsTable"><tr><td colspan="12" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALL SALES ── -->
+    <div class="page" id="page-allsales">
+      <div class="row g-3 mb-3">
+        <div class="col-md-3 col-6">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">TOTAL SALES</div>
+            <div id="salesTotal" style="font-size:1.4rem;font-weight:800;margin-top:4px">₨0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">RECORDS</div>
+            <div id="salesCount" style="font-size:1.4rem;font-weight:800;margin-top:4px">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">CASH + ONLINE</div>
+            <div id="salesCashOnline" style="font-size:1.4rem;font-weight:800;margin-top:4px;color:#059669">₨0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">CREDIT/PENDING</div>
+            <div id="salesCredit" style="font-size:1.4rem;font-weight:800;margin-top:4px;color:#dc2626">₨0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <h6>All Sales — All Businesses</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">All Snooker + Blocks sales</p>
+          </div>
+          <select id="salesBizFilter" class="form-control" style="max-width:180px" onchange="renderAllSales()">
+            <option value="all">All Businesses</option>
+            <option value="basement">Snooker Basement</option>
+            <option value="floor1">Snooker 1st Floor</option>
+            <option value="blocks">Blocks Factory</option>
+          </select>
+        </div>
+        <div class="table-responsive">
+          <table class="t">
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Business</th><th>Details</th><th>Total</th><th>Cash</th><th>Online</th><th>Credit/Pending</th><th>Action</th></tr>
+            </thead>
+            <tbody id="allSalesTable"><tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EMPLOYEES ── -->
+    <div class="page" id="page-employees">
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <h6>All Employees Across Businesses</h6>
+            <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Add/Edit through respective business module</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="t">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Business</th><th>Role/CNIC</th><th>Mobile</th><th>Salary</th><th>Action</th></tr>
+            </thead>
+            <tbody id="empTable"><tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EXPENSES ── -->
+    <div class="page" id="page-expenses">
+      <div class="row g-3 mb-3">
+        <div class="col-md-4 col-12">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">TOTAL EXPENSES</div>
+            <div id="expTotal" style="font-size:1.4rem;font-weight:800;margin-top:4px;color:#dc2626">₨0</div>
+          </div>
+        </div>
+        <div class="col-md-4 col-12">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">RECORDS</div>
+            <div id="expCount" style="font-size:1.4rem;font-weight:800;margin-top:4px">0</div>
+          </div>
+        </div>
+        <div class="col-md-4 col-12">
+          <div class="stat-card" style="background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:.75rem;color:var(--muted);font-weight:700">THIS MONTH</div>
+            <div id="expMonth" style="font-size:1.4rem;font-weight:800;margin-top:4px">₨0</div>
+          </div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-head">
+          <h6>Combined Expenses View</h6>
+          <select id="expBizFilter" class="form-control" style="max-width:180px" onchange="renderAllExpenses()">
+            <option value="all">All Businesses</option>
+            <option value="visa">Sure Visa</option>
+            <option value="basement">Snooker Basement</option>
+            <option value="floor1">Snooker 1st Floor</option>
+            <option value="blocks">Blocks Factory</option>
+          </select>
+        </div>
+        <div class="table-responsive">
+          <table class="t">
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Business</th><th>Category</th><th>Description</th><th>Amount</th><th>Action</th></tr>
+            </thead>
+            <tbody id="expTable"><tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ── -->
+    <div class="page" id="page-reports">
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="chart-card">
+            <h6 style="font-weight:700;margin-bottom:14px">Monthly Revenue Breakdown</h6>
+            <div class="progress-row">
+              <div class="d-flex"><span class="label">Sure Visa</span><span class="val" id="repVisa" style="color:#2563eb">₨0</span></div>
+              <div class="progress"><div class="progress-bar" id="repVisaBar" style="background:#2563eb;width:0%"></div></div>
+            </div>
+            <div class="progress-row">
+              <div class="d-flex"><span class="label">Blocks Factory</span><span class="val" id="repBlocks" style="color:#d97706">₨0</span></div>
+              <div class="progress"><div class="progress-bar" id="repBlocksBar" style="background:#d97706;width:0%"></div></div>
+            </div>
+            <div class="progress-row">
+              <div class="d-flex"><span class="label">Snooker Basement</span><span class="val" id="repBasement" style="color:#7c3aed">₨0</span></div>
+              <div class="progress"><div class="progress-bar" id="repBasementBar" style="background:#7c3aed;width:0%"></div></div>
+            </div>
+            <div class="progress-row">
+              <div class="d-flex"><span class="label">Snooker 1st Floor</span><span class="val" id="repFloor1" style="color:#059669">₨0</span></div>
+              <div class="progress"><div class="progress-bar" id="repFloor1Bar" style="background:#059669;width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="chart-card">
+            <h6 style="font-weight:700;margin-bottom:6px">Profit / Loss Summary</h6>
+            <p style="font-size:.78rem;color:var(--muted)">Combined across all businesses</p>
+            <div class="row g-3 mt-2">
+              <div class="col-6">
+                <div style="background:#d1fae5;border-radius:10px;padding:14px">
+                  <div style="font-size:.75rem;color:#065f46;font-weight:600">Total Income</div>
+                  <div id="repIncome" style="font-size:1.4rem;font-weight:800;color:#065f46;margin-top:4px">₨0</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div style="background:#fee2e2;border-radius:10px;padding:14px">
+                  <div style="font-size:.75rem;color:#991b1b;font-weight:600">Total Expense</div>
+                  <div id="repExpense" style="font-size:1.4rem;font-weight:800;color:#991b1b;margin-top:4px">₨0</div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;padding:14px;color:#fff">
+                  <div style="font-size:.75rem;font-weight:600;opacity:.85">Net Profit</div>
+                  <div id="repProfit" style="font-size:1.6rem;font-weight:800;margin-top:4px">₨0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="table-card" style="padding:24px">
+        <h6 style="font-weight:700;margin-bottom:16px">System Settings</h6>
+        <div class="mb-3">
+          <label class="form-label">Admin Username</label>
+          <input class="form-control" value="admin" disabled/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Change Password</label>
+          <input class="form-control" type="password" id="newPass" placeholder="New password"/>
+        </div>
+        <button class="btn-pri" onclick="changePass()">Update Password</button>
+        <hr class="my-4"/>
+        <h6 style="font-weight:700;margin-bottom:8px;color:var(--danger)">Danger Zone</h6>
+        <p style="font-size:.85rem;color:var(--muted)">Delete all data (demo only)</p>
+        <button class="btn-out" style="border-color:var(--danger);color:var(--danger)" onclick="clearAll()">
+          <i class="bi bi-trash"></i> Clear All Data
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ VIEW DOCUMENTS MODAL ═══════════ -->
+<div class="modal fade" id="docsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-paperclip me-1"></i> Client Documents</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="docsModalBody" style="padding:20px"></div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD MANAGER MODAL ═══════════ -->
+<div class="modal fade" id="mgrModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Manager Login</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Manager Name</label>
+          <input type="text" class="form-control" id="mgrName" placeholder="e.g. Ahmed Khan"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" id="mgrUser" placeholder="e.g. ahmed_visa"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="text" class="form-control" id="mgrPass" placeholder="e.g. visa123"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Assign to Business</label>
+          <select class="form-select" id="mgrBiz">
+            <option value="visa">Sure Visa Consultant</option>
+            <option value="blocks">Mian Blocks Factory</option>
+            <option value="basement">Snooker – Basement</option>
+            <option value="floor1">Snooker – 1st Floor</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="addManager()">Create Manager</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Firebase Configuration & Helpers -->
+<script type="module" src="firebase-config.js"></script>
+
+<script>
+  // ═══════ Wait for Firebase to load ═══════
+  function waitForBMS(callback){
+    if(window.BMS){ callback(); return; }
+    setTimeout(() => waitForBMS(callback), 50);
+  }
+
+  // ───────── DATA STORE (Firebase) ─────────
+  // DB.get / DB.set now use Firebase (async)
+  // Local cache rakha hai taake page jaldi load ho
+  const _cache = { managers: [], adminPass: null };
+
+  const DB = {
+    // Sync read from cache (fast)
+    get(k, def){
+      if(k === 'adminPass') return _cache.adminPass || def;
+      if(k === 'managers') return _cache.managers || def;
+      return def;
+    },
+    // Async write to Firebase
+    async set(k, v){
+      if(k === 'adminPass'){
+        _cache.adminPass = v;
+        await window.BMS.setSetting('adminPass', v);
+      } else if(k === 'managers'){
+        _cache.managers = v;
+        // managers ek array hai - har manager alag doc save karte hain
+        // Lekin simplicity ke liye whole array ek doc mein rakhte hain
+        await window.BMS.set('settings', 'managers_list', { list: v });
+      }
+    }
+  };
+
+  // ───────── Load initial data from Firebase ─────────
+  async function loadInitialData(){
+    try {
+      // Admin password
+      _cache.adminPass = await window.BMS.getSetting('adminPass', 'admin123');
+      // Managers list
+      const mgrsDoc = await window.BMS.getOne('settings', 'managers_list');
+      _cache.managers = mgrsDoc ? (mgrsDoc.list || []) : [];
+      console.log('✅ Initial data loaded from Firebase');
+    } catch(e){
+      console.error('Initial load failed:', e);
+      toast('Firebase connection failed. Check internet.', 'error');
+    }
+  }
+
+  // ───────── TOAST ─────────
+  function toast(msg, type='success'){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast-msg show' + (type==='error'?' error':'');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  }
+
+  // ───────── LOGIN ─────────
+  // Module file mapping - manager ko seedha yahin bhejenge
+  const MODULE_FILES = {
+    visa:     'visa-consultant.html',
+    blocks:   'blocks-factory.html',
+    basement: 'snooker-basement.html',
+    floor1:   'snooker-floor1.html'
+  };
+
+  // Sidebar/dashboard mein business par click karne par actual module file open karta hai
+  function openBiz(bizId){
+    const file = MODULE_FILES[bizId];
+    if(!file){ toast('Module file not found','error'); return; }
+    window.location.href = file;
+  }
+
+  function doLogin(){
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    const savedPass = DB.get('adminPass', 'admin123');
+
+    // 1) Super Admin
+    if(u==='admin' && p===savedPass){
+      localStorage.setItem('bms_session', JSON.stringify({role:'admin', user:'admin', name:'Super Admin'}));
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('mainApp').style.display='block';
+      refreshStats();
+      renderManagers();
+      renderBizGrid();
+      startRealtimeSync();
+      return;
+    }
+
+    // 2) Manager
+    const mgrs = DB.get('managers', []);
+    const mgr = mgrs.find(m => m.user === u && m.pass === p);
+    if(mgr){
+      if(mgr.status === 'inactive'){
+        toast('Your account is inactive. Contact super admin.', 'error');
+        return;
+      }
+      // Save session for manager
+      localStorage.setItem('bms_session', JSON.stringify({
+        role: 'manager',
+        user: mgr.user,
+        name: mgr.name,
+        biz: mgr.biz
+      }));
+      // Seedha business file par bhejo
+      const file = MODULE_FILES[mgr.biz];
+      if(!file){ toast('Business module not found','error'); return; }
+      toast('Welcome ' + mgr.name + '!');
+      setTimeout(() => { window.location.href = file; }, 600);
+      return;
+    }
+
+    toast('Invalid username or password', 'error');
+  }
+  document.getElementById('loginPass').addEventListener('keypress', e => { if(e.key==='Enter') doLogin(); });
+
+  function doLogout(){
+    if(confirm('Logout?')){
+      localStorage.removeItem('bms_session');
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('loginPage').style.display='flex';
+      document.getElementById('loginUser').value='';
+      document.getElementById('loginPass').value='';
+    }
+  }
+
+  async function changePass(){
+    const np = document.getElementById('newPass').value.trim();
+    if(np.length < 4){ toast('Password must be at least 4 characters','error'); return; }
+    try {
+      await DB.set('adminPass', np);
+      document.getElementById('newPass').value='';
+      toast('Password updated');
+    } catch(e){
+      toast('Password update fail. Check internet.', 'error');
+    }
+  }
+
+  async function clearAll(){
+    if(confirm('All data will be deleted. Continue?')){
+      try {
+        // Clear localStorage
+        Object.keys(localStorage).filter(k=>k.startsWith('bms_')).forEach(k=>localStorage.removeItem(k));
+        // Clear managers from Firebase
+        await window.BMS.set('settings', 'managers_list', { list: [] });
+        await window.BMS.setSetting('adminPass', 'admin123');
+        toast('All data cleared');
+        setTimeout(()=>location.reload(),800);
+      } catch(e){
+        toast('Clear fail. Try again.', 'error');
+      }
+    }
+  }
+
+  // ───────── NAV ─────────
+  function showPage(id, title, sub, btn){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active');
+    document.getElementById('pageTitle').textContent = title;
+    document.getElementById('pageSub').textContent = sub;
+    document.querySelectorAll('.nav-link-side').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    closeSidebar();
+    window.scrollTo(0,0);
+
+    // Trigger data refresh for data pages
+    if(id === 'visaclients') renderVisaClients();
+    if(id === 'allsales') renderAllSales();
+    if(id === 'employees') renderAllEmployees();
+    if(id === 'expenses') renderAllExpenses();
+    if(id === 'reports') renderReports();
+    if(id === 'home'){ refreshStats(); renderBizGrid(); }
+    if(id === 'businesses') renderBizGrid();
+  }
+  function showPageByName(id, title, sub){
+    showPage(id, title, sub, null);
+    // highlight correct sidebar button
+    document.querySelectorAll('.nav-link-side').forEach(b => {
+      if(b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('active');
+    });
+  }
+
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('active');
+  }
+  function closeSidebar(){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  // ───────── MANAGERS ─────────
+  const BIZ_NAMES = {
+    visa:'Sure Visa Consultant',
+    blocks:'Mian Blocks Factory',
+    basement:'Snooker – Basement',
+    floor1:'Snooker – 1st Floor'
+  };
+  const BIZ_COLORS = { visa:'#2563eb', blocks:'#d97706', basement:'#7c3aed', floor1:'#059669' };
+
+  async function addManager(){
+    const name = document.getElementById('mgrName').value.trim();
+    const user = document.getElementById('mgrUser').value.trim();
+    const pass = document.getElementById('mgrPass').value.trim();
+    const biz = document.getElementById('mgrBiz').value;
+    if(!name || !user || !pass){ toast('Fill all fields','error'); return; }
+    if(user === 'admin'){ toast('"admin" reserved hai','error'); return; }
+    const mgrs = DB.get('managers', []);
+    if(mgrs.some(m => m.user === user)){ toast('This username already exists','error'); return; }
+    mgrs.push({ id: Date.now(), name, user, pass, biz, status:'active' });
+    try {
+      await DB.set('managers', mgrs);
+      document.getElementById('mgrName').value='';
+      document.getElementById('mgrUser').value='';
+      document.getElementById('mgrPass').value='';
+      bootstrap.Modal.getInstance(document.getElementById('mgrModal')).hide();
+      renderManagers();
+      toast('Manager added');
+    } catch(e){
+      toast('Save fail. Check internet.', 'error');
+    }
+  }
+
+  async function deleteManager(id){
+    if(!confirm('Delete this manager?')) return;
+    let mgrs = DB.get('managers', []);
+    mgrs = mgrs.filter(m => m.id !== id);
+    try {
+      await DB.set('managers', mgrs);
+      renderManagers();
+      toast('Manager deleted');
+    } catch(e){
+      toast('Delete failed. Try again.', 'error');
+    }
+  }
+
+  async function toggleManager(id){
+    let mgrs = DB.get('managers', []);
+    mgrs = mgrs.map(m => m.id===id ? {...m, status: m.status==='active'?'inactive':'active'} : m);
+    try {
+      await DB.set('managers', mgrs);
+      renderManagers();
+    } catch(e){
+      toast('Update fail. Try again.', 'error');
+    }
+  }
+
+  function renderManagers(){
+    const tbody = document.getElementById('mgrTable');
+    const mgrs = DB.get('managers', []);
+    if(mgrs.length === 0){
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><i class="bi bi-person-badge"></i>
+        <p>No managers yet</p>
+        <p style="font-size:.8rem">Click "Add Manager" to create a new login</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = mgrs.map((m,i) => `
+      <tr>
+        <td>${String(i+1).padStart(3,'0')}</td>
+        <td><strong>${m.name}</strong></td>
+        <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:.82rem">${m.user}</code></td>
+        <td><code style="background:#fef3c7;padding:2px 8px;border-radius:4px;font-size:.82rem">${m.pass}</code></td>
+        <td><span class="badge-st" style="background:${BIZ_COLORS[m.biz]}20;color:${BIZ_COLORS[m.biz]}">
+          ${BIZ_NAMES[m.biz]}</span></td>
+        <td><span class="badge-st ${m.status==='active'?'b-paid':'b-pending'}">${m.status}</span></td>
+        <td>
+          <button class="btn-icon" onclick="toggleManager(${m.id})" title="Toggle">
+            <i class="bi bi-power"></i>
+          </button>
+          <button class="btn-icon danger" onclick="deleteManager(${m.id})" title="Delete">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ───────── BIZ GRID (overview page) ─────────
+  // ───────── BUSINESS STATS HELPER ─────────
+  // Har business ka data Firebase se padhke calculate karta hai
+  async function getBizStats(bizId){
+    try {
+      const doc = await window.BMS.getOne('businesses', bizId);
+      if(!doc) return { revenue:0, records:0, pending:0, clients:0, employees:0 };
+
+      let revenue=0, records=0, pending=0, clients=0, employees=0;
+      const sales = doc.sales || [];
+      const emps = doc.employees || [];
+
+      if(bizId === 'visa'){
+        // Visa: clients key (not customers); each client has total fee + payments
+        const visaClients = doc.clients || [];
+        clients = visaClients.length;
+        records = visaClients.length;
+        visaClients.forEach(c => {
+          const paid = (c.payments || []).reduce((s,p)=>s+(+p.amount||0), 0);
+          revenue += paid;
+          pending += Math.max(0, (+c.total||0) - paid);
+        });
+        employees = emps.length;
+      } else if(bizId === 'blocks'){
+        // Blocks: each sale has total + paid
+        records = sales.length;
+        sales.forEach(s => {
+          const total = (+s.qty||0) * (+s.rate||0);
+          revenue += (+s.paid || 0);
+          pending += Math.max(0, total - (+s.paid||0));
+        });
+        employees = emps.length;
+      } else {
+        // Snooker (basement/floor1): each sale has cash, online, credit fields
+        records = sales.length;
+        sales.forEach(s => {
+          revenue += (+s.cash || 0) + (+s.online || 0);
+          pending += (+s.credit || 0);
+        });
+        // Credit recovered also counts as revenue
+        (doc.customers || []).forEach(c => {
+          (c.payments || []).forEach(p => { revenue += (+p.amount || 0); });
+        });
+        employees = emps.length;
+      }
+      return { revenue, records, pending, clients, employees };
+    } catch(e){
+      console.error('getBizStats error for', bizId, e);
+      return { revenue:0, records:0, pending:0, clients:0, employees:0 };
+    }
+  }
+
+  async function renderBizGrid(){
+    const grid = document.getElementById('bizGrid');
+    const list = [
+      {id:'visa', name:'Sure Visa Consultant', icon:'✈️', desc:'Work · Visit · Study Visas', grad:'linear-gradient(135deg,#1d4ed8,#3b82f6)'},
+      {id:'blocks', name:'Mian Blocks Factory', icon:'🏭', desc:'Production & Sales', grad:'linear-gradient(135deg,#b45309,#f59e0b)'},
+      {id:'basement', name:'Snooker Basement', icon:'🎱', desc:'Daily Sales & Credit', grad:'linear-gradient(135deg,#5b21b6,#8b5cf6)'},
+      {id:'floor1', name:'Snooker 1st Floor', icon:'🎱', desc:'Daily Sales & Credit', grad:'linear-gradient(135deg,#047857,#10b981)'},
+    ];
+
+    // Render placeholders first (fast)
+    grid.innerHTML = list.map(b => `
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="biz-card" style="background:${b.grad}"
+             onclick="openBiz('${b.id}')">
+          <div>
+            <div class="biz-icon">${b.icon}</div>
+            <h4>${b.name}</h4>
+            <p>${b.desc}</p>
+          </div>
+          <div class="biz-stats" id="bizStats-${b.id}">
+            <div><strong>...</strong><span>Records</span></div>
+            <div><strong>...</strong><span>Revenue</span></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Then load real stats async
+    for(const b of list){
+      const s = await getBizStats(b.id);
+      const el = document.getElementById('bizStats-'+b.id);
+      if(el){
+        el.innerHTML = `
+          <div><strong>${s.records}</strong><span>Records</span></div>
+          <div><strong>₨${s.revenue.toLocaleString()}</strong><span>Revenue</span></div>
+        `;
+      }
+    }
+  }
+
+  // ───────── STATS REFRESH ─────────
+  async function refreshStats(){
+    const ids = ['visa','blocks','basement','floor1'];
+    const statsMap = {};
+    let totalRev=0, totalPending=0, totalClients=0, totalEmps=0;
+
+    for(const id of ids){
+      const s = await getBizStats(id);
+      statsMap[id] = s;
+      totalRev += s.revenue;
+      totalPending += s.pending;
+      totalClients += s.clients;
+      totalEmps += s.employees;
+    }
+
+    // Top header totals
+    document.getElementById('totalRevenue').textContent = '₨' + totalRev.toLocaleString();
+    document.getElementById('totalEmployees').textContent = totalEmps;
+    document.getElementById('totalClients').textContent = totalClients;
+    document.getElementById('totalPending').textContent = '₨' + totalPending.toLocaleString();
+
+    // ─── Hardcoded business cards on home dashboard ───
+    // Visa: Clients + Revenue
+    const elVisaC = document.getElementById('visaClients');
+    const elVisaR = document.getElementById('visaRev');
+    if(elVisaC) elVisaC.textContent = statsMap.visa.clients;
+    if(elVisaR) elVisaR.textContent = '₨' + statsMap.visa.revenue.toLocaleString();
+
+    // Blocks: Stock + Revenue (stock = records for now)
+    const elBlocksS = document.getElementById('blocksStock');
+    const elBlocksR = document.getElementById('blocksRev');
+    if(elBlocksS) elBlocksS.textContent = statsMap.blocks.records;
+    if(elBlocksR) elBlocksR.textContent = '₨' + statsMap.blocks.revenue.toLocaleString();
+
+    // Basement: Today + Credit (today = revenue for now, credit = pending)
+    const elBaseS = document.getElementById('basementSale');
+    const elBaseC = document.getElementById('basementCredit');
+    if(elBaseS) elBaseS.textContent = '₨' + statsMap.basement.revenue.toLocaleString();
+    if(elBaseC) elBaseC.textContent = '₨' + statsMap.basement.pending.toLocaleString();
+
+    // Floor1: Today + Credit
+    const elF1S = document.getElementById('floor1Sale');
+    const elF1C = document.getElementById('floor1Credit');
+    if(elF1S) elF1S.textContent = '₨' + statsMap.floor1.revenue.toLocaleString();
+    if(elF1C) elF1C.textContent = '₨' + statsMap.floor1.pending.toLocaleString();
+
+    // ─── Revenue by Business — bar chart ───
+    const chart = document.getElementById('chartBars');
+    if(chart){
+      const max = Math.max(statsMap.visa.revenue, statsMap.blocks.revenue, statsMap.basement.revenue, statsMap.floor1.revenue, 1);
+      const h = v => Math.max(8, Math.round((v/max)*100));  // min 8% so empty bars show
+      chart.innerHTML = `
+        <div class="bar" style="height:${h(statsMap.visa.revenue)}%;background:linear-gradient(180deg,#3b82f6,#1d4ed8)" title="₨${statsMap.visa.revenue.toLocaleString()}"><span>Visa</span></div>
+        <div class="bar" style="height:${h(statsMap.blocks.revenue)}%;background:linear-gradient(180deg,#f59e0b,#b45309)" title="₨${statsMap.blocks.revenue.toLocaleString()}"><span>Blocks</span></div>
+        <div class="bar" style="height:${h(statsMap.basement.revenue)}%;background:linear-gradient(180deg,#8b5cf6,#5b21b6)" title="₨${statsMap.basement.revenue.toLocaleString()}"><span>Basement</span></div>
+        <div class="bar" style="height:${h(statsMap.floor1.revenue)}%;background:linear-gradient(180deg,#10b981,#047857)" title="₨${statsMap.floor1.revenue.toLocaleString()}"><span>1st Floor</span></div>
+      `;
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // ADMIN VIEW: All Visa Clients
+  // ═══════════════════════════════════════════════
+  async function renderVisaClients(){
+    const tbody = document.getElementById('visaClientsTable');
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr>';
+    try {
+      const doc = await window.BMS.getOne('businesses', 'visa');
+      const clients = (doc && doc.clients) || [];
+      if(clients.length === 0){
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#94a3b8">No clients. Add from Visa module.</td></tr>';
+        return;
+      }
+      const typeMap = { study:'Study', work:'Work', visit:'Visit' };
+      tbody.innerHTML = clients.map((c, i) => {
+        const paid = (c.payments||[]).reduce((s,p)=>s+(+p.amount||0),0);
+        const pending = Math.max(0, (+c.total||0) - paid);
+        const docsCount = (c.documents||[]).length;
+        const docsBtn = docsCount > 0
+          ? `<button class="btn-out" style="padding:4px 8px;font-size:.75rem;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe" onclick='viewDocs(${JSON.stringify(c.documents).replace(/'/g, "&apos;")})' title="View ${docsCount} document(s)"><i class="bi bi-paperclip"></i> ${docsCount}</button>`
+          : `<span style="color:#94a3b8;font-size:.75rem">—</span>`;
+        return `
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${c.name||'—'}</strong></td>
+            <td><span style="background:#dbeafe;color:#1d4ed8;padding:3px 8px;border-radius:6px;font-size:.75rem;font-weight:700">${c.trackCode||'—'}</span></td>
+            <td>${typeMap[c.type]||c.type||'—'}</td>
+            <td>${c.country||'—'}</td>
+            <td>${c.mobile||'—'}</td>
+            <td>₨${(+c.total||0).toLocaleString()}</td>
+            <td style="color:#059669;font-weight:700">₨${paid.toLocaleString()}</td>
+            <td style="color:${pending>0?'#dc2626':'#059669'};font-weight:700">₨${pending.toLocaleString()}</td>
+            <td><span style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-size:.72rem">${c.status||'New'}</span></td>
+            <td>${docsBtn}</td>
+            <td>
+              <button class="btn-out" style="padding:4px 8px;font-size:.75rem" onclick="openBiz('visa')" title="Edit in Visa Module">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn-out" style="padding:4px 8px;font-size:.75rem;border-color:#dc2626;color:#dc2626" onclick="deleteVisaClient(${i})" title="Delete">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#dc2626">Load failed. Check internet.</td></tr>';
+    }
+  }
+
+  async function deleteVisaClient(idx){
+    if(!confirm('Delete this client? This action cannot be undone.')) return;
+    try {
+      const doc = await window.BMS.getOne('businesses', 'visa');
+      const clients = (doc && doc.clients) || [];
+      // Delete client's uploaded files from Storage
+      const client = clients[idx];
+      if(client && client.documents && client.documents.length && window.BMS.deleteFile){
+        for(const d of client.documents){
+          if(d.path){
+            try { await window.BMS.deleteFile(d.path); } catch(e){ console.warn('File delete failed:', e); }
+          }
+        }
+      }
+      clients.splice(idx, 1);
+      const updated = { ...doc, clients, updatedAt: new Date().toISOString() };
+      delete updated.id;
+      await window.BMS.set('businesses', 'visa', updated);
+      toast('Client deleted');
+      renderVisaClients();
+      refreshStats();
+    } catch(e){
+      console.error(e);
+      toast('Delete failed. Check internet.', 'error');
+    }
+  }
+
+  // View client documents in modal
+  function viewDocs(docs){
+    if(!docs || !docs.length){
+      toast('No documents', 'error');
+      return;
+    }
+    const body = document.getElementById('docsModalBody');
+    body.innerHTML = `
+      <p style="color:#64748b;font-size:.88rem;margin-bottom:14px">${docs.length} document(s) uploaded by client.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        ${docs.map(d => {
+          const isImg = d.type && d.type.includes('image');
+          const isPdf = d.type && d.type.includes('pdf');
+          const icon = isPdf ? 'bi-file-earmark-pdf-fill' : (isImg ? 'bi-file-earmark-image-fill' : 'bi-file-earmark-fill');
+          const color = isPdf ? '#dc2626' : (isImg ? '#059669' : '#2563eb');
+          const sizeText = d.size ? `${(d.size/1024/1024).toFixed(2)} MB` : '';
+          return `
+            <div style="flex:1;min-width:200px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+              <div style="text-align:center;font-size:2.5rem;color:${color};margin-bottom:8px">
+                <i class="bi ${icon}"></i>
+              </div>
+              <div style="font-weight:600;font-size:.85rem;margin-bottom:4px;word-break:break-all">${d.name}</div>
+              <div style="font-size:.72rem;color:#94a3b8;margin-bottom:10px">${sizeText}</div>
+              <a href="${d.url}" target="_blank" class="btn-pri" style="display:block;text-align:center;text-decoration:none;padding:8px;font-size:.82rem">
+                <i class="bi bi-eye me-1"></i> View / Download
+              </a>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    new bootstrap.Modal(document.getElementById('docsModal')).show();
+  }
+
+  // ═══════════════════════════════════════════════
+  // ADMIN VIEW: All Sales (Snooker + Blocks)
+  // ═══════════════════════════════════════════════
+  let _allSalesData = []; // cache for filter
+
+  async function renderAllSales(){
+    const tbody = document.getElementById('allSalesTable');
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr>';
+    try {
+      const [basement, floor1, blocks] = await Promise.all([
+        window.BMS.getOne('businesses', 'basement'),
+        window.BMS.getOne('businesses', 'floor1'),
+        window.BMS.getOne('businesses', 'blocks'),
+      ]);
+      const all = [];
+      // Snooker basement
+      ((basement && basement.sales) || []).forEach((s, idx) => {
+        const cash = +s.cash||0, online = +s.online||0, credit = +s.credit||0;
+        all.push({
+          biz: 'basement', bizName: 'Snooker Basement', bizColor: '#7c3aed',
+          idx, date: s.date||'—',
+          details: (s.customer ? s.customer + ' · ' : '') + (s.game||s.note||'Game sale'),
+          total: cash+online+credit, cash, online, credit
+        });
+      });
+      // Snooker floor1
+      ((floor1 && floor1.sales) || []).forEach((s, idx) => {
+        const cash = +s.cash||0, online = +s.online||0, credit = +s.credit||0;
+        all.push({
+          biz: 'floor1', bizName: 'Snooker 1st Floor', bizColor: '#059669',
+          idx, date: s.date||'—',
+          details: (s.customer ? s.customer + ' · ' : '') + (s.game||s.note||'Game sale'),
+          total: cash+online+credit, cash, online, credit
+        });
+      });
+      // Blocks
+      ((blocks && blocks.sales) || []).forEach((s, idx) => {
+        const total = (+s.qty||0) * (+s.rate||0);
+        const paid = +s.paid||0;
+        const pending = Math.max(0, total-paid);
+        all.push({
+          biz: 'blocks', bizName: 'Blocks Factory', bizColor: '#d97706',
+          idx, date: s.date||'—',
+          details: (s.customer||'—') + ' · ' + (+s.qty||0) + ' blocks @ ₨' + (+s.rate||0),
+          total, cash: paid, online: 0, credit: pending
+        });
+      });
+
+      _allSalesData = all;
+      // sort by date desc
+      all.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+      // Stats
+      const totalSum = all.reduce((s,r)=>s+r.total,0);
+      const cashOnlineSum = all.reduce((s,r)=>s+r.cash+r.online,0);
+      const creditSum = all.reduce((s,r)=>s+r.credit,0);
+      document.getElementById('salesTotal').textContent = '₨' + totalSum.toLocaleString();
+      document.getElementById('salesCount').textContent = all.length;
+      document.getElementById('salesCashOnline').textContent = '₨' + cashOnlineSum.toLocaleString();
+      document.getElementById('salesCredit').textContent = '₨' + creditSum.toLocaleString();
+
+      // Filter
+      const filter = document.getElementById('salesBizFilter').value;
+      const filtered = filter === 'all' ? all : all.filter(r => r.biz === filter);
+
+      if(filtered.length === 0){
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">No sales found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map((r, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td>${r.date}</td>
+          <td><span style="background:${r.bizColor}20;color:${r.bizColor};padding:3px 8px;border-radius:6px;font-size:.72rem;font-weight:700">${r.bizName}</span></td>
+          <td>${r.details}</td>
+          <td><strong>₨${r.total.toLocaleString()}</strong></td>
+          <td style="color:#059669">₨${r.cash.toLocaleString()}</td>
+          <td style="color:#2563eb">₨${r.online.toLocaleString()}</td>
+          <td style="color:${r.credit>0?'#dc2626':'#94a3b8'}">₨${r.credit.toLocaleString()}</td>
+          <td>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem" onclick="openBiz('${r.biz}')" title="Edit in module">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem;border-color:#dc2626;color:#dc2626" onclick="deleteSale('${r.biz}',${r.idx})" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#dc2626">Load failed.</td></tr>';
+    }
+  }
+
+  async function deleteSale(biz, idx){
+    if(!confirm('Delete this sale?')) return;
+    try {
+      const doc = await window.BMS.getOne('businesses', biz);
+      const sales = (doc && doc.sales) || [];
+      sales.splice(idx, 1);
+      const updated = { ...doc, sales, updatedAt: new Date().toISOString() };
+      delete updated.id;
+      await window.BMS.set('businesses', biz, updated);
+      toast('Sale deleted');
+      renderAllSales();
+      refreshStats();
+    } catch(e){
+      console.error(e);
+      toast('Delete failed.', 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // ADMIN VIEW: All Employees
+  // ═══════════════════════════════════════════════
+  async function renderAllEmployees(){
+    const tbody = document.getElementById('empTable');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr>';
+    try {
+      const bizList = [
+        {id:'visa', name:'Sure Visa', color:'#2563eb'},
+        {id:'blocks', name:'Blocks Factory', color:'#d97706'},
+        {id:'basement', name:'Snooker Basement', color:'#7c3aed'},
+        {id:'floor1', name:'Snooker 1st Floor', color:'#059669'},
+      ];
+      const docs = await Promise.all(bizList.map(b => window.BMS.getOne('businesses', b.id)));
+      const all = [];
+      bizList.forEach((b, i) => {
+        const emps = (docs[i] && docs[i].employees) || [];
+        emps.forEach((e, idx) => {
+          all.push({ biz: b.id, bizName: b.name, bizColor: b.color, idx, ...e });
+        });
+      });
+      if(all.length === 0){
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">No employees found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = all.map((e, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${e.name||'—'}</strong></td>
+          <td><span style="background:${e.bizColor}20;color:${e.bizColor};padding:3px 8px;border-radius:6px;font-size:.72rem;font-weight:700">${e.bizName}</span></td>
+          <td>${e.role||e.cnic||'—'}</td>
+          <td>${e.mobile||e.phone||'—'}</td>
+          <td>₨${(+e.salary||0).toLocaleString()}</td>
+          <td>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem" onclick="openBiz('${e.biz}')" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem;border-color:#dc2626;color:#dc2626" onclick="deleteEmployee('${e.biz}',${e.idx})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#dc2626">Load failed.</td></tr>';
+    }
+  }
+
+  async function deleteEmployee(biz, idx){
+    if(!confirm('Delete this employee?')) return;
+    try {
+      const doc = await window.BMS.getOne('businesses', biz);
+      const emps = (doc && doc.employees) || [];
+      emps.splice(idx, 1);
+      const updated = { ...doc, employees: emps, updatedAt: new Date().toISOString() };
+      delete updated.id;
+      await window.BMS.set('businesses', biz, updated);
+      toast('Employee deleted');
+      renderAllEmployees();
+      refreshStats();
+    } catch(e){
+      console.error(e);
+      toast('Delete failed.', 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // ADMIN VIEW: All Expenses
+  // ═══════════════════════════════════════════════
+  async function renderAllExpenses(){
+    const tbody = document.getElementById('expTable');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading...</td></tr>';
+    try {
+      const bizList = [
+        {id:'visa', name:'Sure Visa', color:'#2563eb'},
+        {id:'blocks', name:'Blocks Factory', color:'#d97706'},
+        {id:'basement', name:'Snooker Basement', color:'#7c3aed'},
+        {id:'floor1', name:'Snooker 1st Floor', color:'#059669'},
+      ];
+      const docs = await Promise.all(bizList.map(b => window.BMS.getOne('businesses', b.id)));
+      const all = [];
+      bizList.forEach((b, i) => {
+        const exps = (docs[i] && docs[i].expenses) || [];
+        exps.forEach((e, idx) => {
+          all.push({ biz: b.id, bizName: b.name, bizColor: b.color, idx, ...e });
+        });
+      });
+
+      // Stats
+      const total = all.reduce((s,e)=>s+(+e.amount||0),0);
+      const thisMonth = new Date().toISOString().slice(0,7);
+      const monthSum = all.filter(e => (e.date||'').startsWith(thisMonth)).reduce((s,e)=>s+(+e.amount||0),0);
+      document.getElementById('expTotal').textContent = '₨' + total.toLocaleString();
+      document.getElementById('expCount').textContent = all.length;
+      document.getElementById('expMonth').textContent = '₨' + monthSum.toLocaleString();
+
+      // sort by date desc
+      all.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+      // Filter
+      const filter = document.getElementById('expBizFilter').value;
+      const filtered = filter === 'all' ? all : all.filter(r => r.biz === filter);
+
+      if(filtered.length === 0){
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">No expenses found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map((e, i) => `
+        <tr>
+          <td>${i+1}</td>
+          <td>${e.date||'—'}</td>
+          <td><span style="background:${e.bizColor}20;color:${e.bizColor};padding:3px 8px;border-radius:6px;font-size:.72rem;font-weight:700">${e.bizName}</span></td>
+          <td>${e.category||e.cat||'General'}</td>
+          <td>${e.desc||e.description||e.note||'—'}</td>
+          <td style="color:#dc2626;font-weight:700">₨${(+e.amount||0).toLocaleString()}</td>
+          <td>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem" onclick="openBiz('${e.biz}')" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn-out" style="padding:4px 8px;font-size:.75rem;border-color:#dc2626;color:#dc2626" onclick="deleteExpense('${e.biz}',${e.idx})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#dc2626">Load failed.</td></tr>';
+    }
+  }
+
+  async function deleteExpense(biz, idx){
+    if(!confirm('Delete this expense?')) return;
+    try {
+      const doc = await window.BMS.getOne('businesses', biz);
+      const exps = (doc && doc.expenses) || [];
+      exps.splice(idx, 1);
+      const updated = { ...doc, expenses: exps, updatedAt: new Date().toISOString() };
+      delete updated.id;
+      await window.BMS.set('businesses', biz, updated);
+      toast('Expense deleted');
+      renderAllExpenses();
+    } catch(e){
+      console.error(e);
+      toast('Delete failed.', 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  // ADMIN VIEW: Reports
+  // ═══════════════════════════════════════════════
+  async function renderReports(){
+    try {
+      const ids = ['visa','blocks','basement','floor1'];
+      const docs = await Promise.all(ids.map(id => window.BMS.getOne('businesses', id)));
+
+      const stats = {};
+      let totalIncome = 0, totalExpense = 0;
+
+      ids.forEach((id, i) => {
+        const s = getRevenueFromDoc(id, docs[i]);
+        stats[id] = s.revenue;
+        totalIncome += s.revenue;
+        const exps = (docs[i] && docs[i].expenses) || [];
+        totalExpense += exps.reduce((sum, e)=>sum+(+e.amount||0), 0);
+      });
+
+      const max = Math.max(stats.visa, stats.blocks, stats.basement, stats.floor1, 1);
+      const pct = v => Math.min(100, Math.round((v/max)*100));
+
+      document.getElementById('repVisa').textContent = '₨' + stats.visa.toLocaleString();
+      document.getElementById('repVisaBar').style.width = pct(stats.visa) + '%';
+      document.getElementById('repBlocks').textContent = '₨' + stats.blocks.toLocaleString();
+      document.getElementById('repBlocksBar').style.width = pct(stats.blocks) + '%';
+      document.getElementById('repBasement').textContent = '₨' + stats.basement.toLocaleString();
+      document.getElementById('repBasementBar').style.width = pct(stats.basement) + '%';
+      document.getElementById('repFloor1').textContent = '₨' + stats.floor1.toLocaleString();
+      document.getElementById('repFloor1Bar').style.width = pct(stats.floor1) + '%';
+
+      document.getElementById('repIncome').textContent = '₨' + totalIncome.toLocaleString();
+      document.getElementById('repExpense').textContent = '₨' + totalExpense.toLocaleString();
+      document.getElementById('repProfit').textContent = '₨' + (totalIncome - totalExpense).toLocaleString();
+    } catch(e){
+      console.error(e);
+      toast('Reports load failed.', 'error');
+    }
+  }
+
+  // Helper: revenue from doc (mirror of getBizStats logic)
+  function getRevenueFromDoc(bizId, doc){
+    if(!doc) return { revenue: 0 };
+    let revenue = 0;
+    if(bizId === 'visa'){
+      (doc.clients||[]).forEach(c => {
+        revenue += (c.payments||[]).reduce((s,p)=>s+(+p.amount||0), 0);
+      });
+    } else if(bizId === 'blocks'){
+      (doc.sales||[]).forEach(s => { revenue += (+s.paid||0); });
+    } else {
+      (doc.sales||[]).forEach(s => { revenue += (+s.cash||0) + (+s.online||0); });
+      (doc.customers||[]).forEach(c => {
+        (c.payments||[]).forEach(p => { revenue += (+p.amount||0); });
+      });
+    }
+    return { revenue };
+  }
+
+  // ═══════ REAL-TIME SYNC ═══════
+  // Firebase listener — kisi bhi business mein data change ho to admin auto-update
+  function startRealtimeSync(){
+    if(!window.BMS || !window.BMS.listen) return;
+
+    window.BMS.listen('businesses', (items) => {
+      console.log('🔄 Business data updated, refreshing admin view');
+
+      // Active page detect karke us ka render function call karein
+      const activePage = document.querySelector('.page.active');
+      if(!activePage) return;
+      const pageId = activePage.id.replace('page-', '');
+
+      // Stats hamesha refresh (sidebar/header ke counts)
+      refreshStats();
+
+      // Active page ka data refresh
+      if(pageId === 'home') renderBizGrid();
+      else if(pageId === 'businesses') renderBizGrid();
+      else if(pageId === 'visaclients') renderVisaClients();
+      else if(pageId === 'allsales') renderAllSales();
+      else if(pageId === 'employees') renderAllEmployees();
+      else if(pageId === 'expenses') renderAllExpenses();
+      else if(pageId === 'reports') renderReports();
+    });
+  }
+
+  // ═══════ INITIAL BOOT ═══════
+  // Step 1: Check session SYNCHRONOUSLY before paint (no flash)
+  (function preBoot(){
+    try {
+      const s = JSON.parse(localStorage.getItem('bms_session') || 'null');
+
+      // Manager session — redirect immediately, no flicker
+      if(s && s.role === 'manager' && s.biz){
+        const map = { visa:'visa-consultant.html', blocks:'blocks-factory.html', basement:'snooker-basement.html', floor1:'snooker-floor1.html' };
+        if(map[s.biz]){
+          window.location.replace(map[s.biz]);
+          return;
+        }
+      }
+
+      // Admin session — show main app instantly
+      if(s && s.role === 'admin'){
+        document.documentElement.style.setProperty('--init-show', 'main');
+        // Show main app as soon as DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+          document.getElementById('mainApp').style.display = 'block';
+        });
+      } else {
+        // No session — show login as soon as DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+          document.getElementById('loginPage').style.display = 'flex';
+        });
+      }
+    } catch(e){
+      console.error('Pre-boot error:', e);
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('loginPage').style.display = 'flex';
+      });
+    }
+  })();
+
+  // Step 2: After Firebase is ready, load data
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('.btn-login') || document.querySelector('[onclick*="doLogin"]');
+    if(btn){
+      btn.disabled = true;
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting...';
+
+      waitForBMS(async () => {
+        await loadInitialData();
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+
+        // If admin session restored, load all data + start sync
+        const s = JSON.parse(localStorage.getItem('bms_session') || 'null');
+        if(s && s.role === 'admin'){
+          refreshStats();
+          renderManagers();
+          renderBizGrid();
+          startRealtimeSync();
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

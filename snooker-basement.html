@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cue Snooker – Basement – BMS</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#f5f6fa;--card:#fff;--text:#0f172a;--muted:#64748b;
+    --border:#e2e8f0;--primary:#7c3aed;--primary-dark:#5b21b6;
+    --success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#0ea5e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* TOP NAVBAR */
+  #topbar{position:fixed;top:0;left:0;right:0;height:64px;background:linear-gradient(135deg,#5b21b6,#7c3aed);
+    display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:1000;
+    box-shadow:0 2px 10px rgba(124,58,237,.2)}
+  .brand{color:#fff;font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:10px}
+  .brand .badge-biz{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .top-btn{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;
+    padding:8px 14px;font-weight:600;font-size:.82rem;cursor:pointer}
+  .top-btn:hover{background:rgba(255,255,255,.25)}
+  .avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+
+  /* SUB NAV TABS */
+  #subnav{position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);
+    padding:0 24px;display:flex;gap:4px;overflow-x:auto;z-index:999;height:54px;align-items:center}
+  .tab-btn{background:transparent;border:none;padding:10px 18px;font-weight:600;font-size:.88rem;
+    color:var(--muted);cursor:pointer;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .tab-btn:hover{background:#f1f5f9;color:var(--text)}
+  .tab-btn.active{background:#ede9fe;color:#5b21b6}
+
+  #main{margin-top:118px;padding:24px;min-height:calc(100vh - 118px)}
+  .page{display:none}
+  .page.active{display:block;animation:fadeIn .25s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* STATS */
+  .stat-card{background:#fff;border-radius:14px;padding:18px;border:1px solid var(--border);transition:all .2s;position:relative;overflow:hidden}
+  .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.06)}
+  .stat-card.hero{background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border:none}
+  .stat-card.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%}
+  .stat-icon{font-size:1.4rem;margin-bottom:8px;display:block}
+  .stat-value{font-size:1.6rem;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .stat-label{font-size:.78rem;color:var(--muted);margin-top:6px;font-weight:600}
+  .stat-card.hero .stat-label{color:rgba(255,255,255,.85)}
+
+  /* CARD */
+  .card-box{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+  .card-head{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .card-head h6{font-weight:700;font-size:.95rem;margin:0}
+  .card-body-p{padding:22px}
+  .table-responsive{overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:.85rem}
+  table.t thead th{background:#f8fafc;padding:12px 18px;font-weight:700;color:#475569;
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--border)}
+  table.t tbody td{padding:13px 18px;border-bottom:1px solid #f1f5f9;color:#334155}
+  table.t tbody tr:hover{background:#fafbfc}
+  table.t tbody tr:last-child td{border-bottom:none}
+  table.t tbody tr.clickable{cursor:pointer}
+
+  .badge-st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+  .b-cash{background:#d1fae5;color:#065f46}
+  .b-online{background:#dbeafe;color:#1d4ed8}
+  .b-credit{background:#fee2e2;color:#991b1b}
+
+  .btn-pri{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+    border:none;border-radius:8px;padding:9px 16px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(124,58,237,.35)}
+  .btn-out{background:#fff;color:#475569;border:1.5px solid var(--border);border-radius:8px;
+    padding:8px 14px;font-weight:600;font-size:.84rem;cursor:pointer}
+  .btn-out:hover{border-color:var(--primary);color:var(--primary)}
+  .btn-icon{background:#f1f5f9;border:none;border-radius:6px;padding:6px 9px;color:#475569;
+    cursor:pointer;font-size:.85rem;margin-right:4px}
+  .btn-icon:hover{background:#e2e8f0}
+  .btn-icon.danger{color:var(--danger)}
+  .btn-icon.primary{color:var(--primary)}
+
+  /* MODAL */
+  .modal-content{border-radius:14px;border:none}
+  .modal-header{padding:18px 22px;border-bottom:1px solid var(--border)}
+  .modal-title{font-weight:700;font-size:1rem}
+  .modal-body{padding:22px}
+  .form-label{font-weight:600;font-size:.8rem;color:#475569;margin-bottom:6px}
+  .form-control,.form-select{border-radius:8px;border:1.5px solid var(--border);padding:9px 12px;font-size:.88rem}
+  .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:none}
+  textarea.form-control{min-height:70px}
+
+  .section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+    color:var(--muted);margin:8px 0 14px}
+
+  /* CUSTOMER DETAIL */
+  .detail-header{background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-radius:14px;
+    padding:24px;margin-bottom:20px}
+  .detail-header h3{font-weight:800;margin:0;font-size:1.4rem}
+  .credit-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:14px}
+  .credit-box{background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px}
+  .credit-box .lbl{font-size:.72rem;opacity:.85;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .credit-box .val{font-size:1.3rem;font-weight:800;margin-top:4px}
+
+  .timeline-item{display:flex;gap:14px;padding:12px 14px;border-radius:10px;background:#f8fafc;
+    margin-bottom:8px;border-left:3px solid var(--primary);align-items:center}
+  .timeline-date{font-size:.78rem;color:var(--muted);font-weight:600;white-space:nowrap;min-width:90px}
+  .timeline-content{flex:1;font-size:.88rem}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty i{font-size:3rem;color:#cbd5e1;margin-bottom:12px;display:block}
+  .empty p{margin:6px 0;font-size:.9rem}
+
+  .toast-msg{position:fixed;top:80px;right:20px;background:var(--success);color:#fff;
+    padding:14px 20px;border-radius:10px;font-weight:600;font-size:.88rem;z-index:9999;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;animation:slideIn .3s}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .toast-msg.show{display:block}
+  .toast-msg.error{background:var(--danger)}
+
+  @media(max-width:768px){
+    #topbar{padding:0 14px}
+    .brand{font-size:1rem}
+    .brand .badge-biz{display:none}
+    #subnav{padding:0 12px;height:50px}
+    .tab-btn{padding:8px 12px;font-size:.82rem}
+    #main{padding:16px;margin-top:114px}
+    .stat-value{font-size:1.25rem}
+    .detail-header{padding:18px}
+    .detail-header h3{font-size:1.15rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP NAVBAR ═══════════ -->
+<div id="topbar">
+  <div class="brand">
+    <i class="bi bi-circle-fill"></i>
+    <span>Cue Snooker – Basement</span>
+    <span class="badge-biz d-none d-md-inline">BMS</span>
+  </div>
+  <div class="top-right">
+    <button class="top-btn" onclick="goBack()">
+      <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-sm-inline">Back to Admin</span>
+    </button>
+    <div class="avatar">AD</div>
+  </div>
+</div>
+
+<!-- ═══════════ SUB NAV ═══════════ -->
+<div id="subnav">
+  <button class="tab-btn active" onclick="showTab('dashboard',this)"><i class="bi bi-grid-1x2-fill"></i> Dashboard</button>
+  <button class="tab-btn" onclick="showTab('sales',this)"><i class="bi bi-cash-coin"></i> Daily Sales</button>
+  <button class="tab-btn" onclick="showTab('credit',this)"><i class="bi bi-person-lines-fill"></i> Credit Customers</button>
+  <button class="tab-btn" onclick="showTab('expenses',this)"><i class="bi bi-receipt"></i> Expenses</button>
+  <button class="tab-btn" onclick="showTab('employees',this)"><i class="bi bi-person-badge-fill"></i> Employees</button>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div id="main">
+
+  <!-- ── DASHBOARD ── -->
+  <div class="page active" id="tab-dashboard">
+    <div class="section-label">Today's Summary — <span id="todayDate"></span></div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card hero"><i class="bi bi-cash-stack stat-icon"></i><div class="stat-value" id="dashTodaySale">₨0</div><div class="stat-label">Today Sale</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-cash stat-icon" style="color:#10b981"></i><div class="stat-value" style="color:#10b981" id="dashCash">₨0</div><div class="stat-label">Cash Payment</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-credit-card-2-front stat-icon" style="color:#0ea5e9"></i><div class="stat-value" style="color:#0ea5e9" id="dashOnline">₨0</div><div class="stat-label">Online Payment</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-person-x-fill stat-icon" style="color:#ef4444"></i><div class="stat-value" style="color:#ef4444" id="dashCredit">₨0</div><div class="stat-label">Credit Sale</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-arrow-return-left stat-icon" style="color:#f59e0b"></i><div class="stat-value" style="color:#f59e0b" id="dashRecovered">₨0</div><div class="stat-label">Credit Recovered</div></div></div>
+      <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-receipt stat-icon" style="color:#64748b"></i><div class="stat-value" style="color:#64748b" id="dashExpense">₨0</div><div class="stat-label">Today Expenses</div></div></div>
+    </div>
+
+    <div class="section-label">This Month</div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#5b21b6" id="dashMonthSale">₨0</div><div class="stat-label">Total Sale</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#ef4444" id="dashTotalCredit">₨0</div><div class="stat-label">Total Outstanding Credit</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#64748b" id="dashMonthExp">₨0</div><div class="stat-label">Total Expenses</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#10b981" id="dashProfit">₨0</div><div class="stat-label">Net Profit</div></div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Recent Sales</h6><button class="btn-pri" onclick="showTab('sales', document.querySelectorAll('.tab-btn')[1])">View All</button></div>
+          <div class="table-responsive"><table class="t" id="recentSalesTable"></table></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-box">
+          <div class="card-head"><h6>Top Credit Customers</h6><button class="btn-pri" onclick="showTab('credit', document.querySelectorAll('.tab-btn')[2])">View All</button></div>
+          <div class="table-responsive"><table class="t" id="topCreditTable"></table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DAILY SALES TAB ── -->
+  <div class="page" id="tab-sales">
+    <div class="card-box">
+      <div class="card-head">
+        <div>
+          <h6>Daily Sales Records</h6>
+          <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Cash + Online + Credit entries</p>
+        </div>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#saleModal" onclick="resetSaleForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Sale
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Customer</th><th>Cash</th><th>Online</th><th>Credit</th><th>Total</th><th>Note</th><th>Action</th></tr>
+          </thead>
+          <tbody id="salesTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CREDIT CUSTOMERS LIST ── -->
+  <div class="page" id="tab-credit">
+    <div class="card-box">
+      <div class="card-head">
+        <div>
+          <h6>Credit Customers</h6>
+          <p style="font-size:.78rem;color:var(--muted);margin:4px 0 0">Tap on customer to see full credit history</p>
+        </div>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#custModal" onclick="resetCustForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Customer
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>#</th><th>Customer Name</th><th>Phone</th><th>Total Credit</th><th>Recovered</th><th>Outstanding</th><th>Action</th></tr>
+          </thead>
+          <tbody id="custTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CUSTOMER DETAIL ── -->
+  <div class="page" id="tab-custDetail">
+    <button class="btn-out mb-3" onclick="backToCredit()"><i class="bi bi-arrow-left me-1"></i> Back to Customers</button>
+    <div id="custDetailContent"></div>
+  </div>
+
+  <!-- ── EXPENSES TAB ── -->
+  <div class="page" id="tab-expenses">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Expenses</h6>
+        <div class="d-flex align-items-center gap-2">
+          <input type="month" class="form-control form-control-sm" id="expMonthFilter" style="max-width:170px" onchange="renderExpenses()"/>
+          <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#expModal" onclick="resetExpForm()">
+            <i class="bi bi-plus-lg me-1"></i> Add Expense
+          </button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Date</th><th>Description</th><th>Amount</th><th>Action</th></tr>
+          </thead>
+          <tbody id="expTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMPLOYEES TAB ── -->
+  <div class="page" id="tab-employees">
+    <div class="card-box">
+      <div class="card-head">
+        <h6>Employees</h6>
+        <button class="btn-pri" data-bs-toggle="modal" data-bs-target="#empModal" onclick="resetEmpForm()">
+          <i class="bi bi-plus-lg me-1"></i> Add Employee
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="t">
+          <thead>
+            <tr><th>Name</th><th>Basic Salary</th><th>Meal Allowance</th><th>Total Salary</th><th>Action</th></tr>
+          </thead>
+          <tbody id="empTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ ADD SALE MODAL ═══════════ -->
+<div class="modal fade" id="saleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Sale Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="saleId"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="saleDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Customer (optional — only for credit)</label>
+          <select class="form-select" id="saleCust">
+            <option value="">-- Walk-in / No customer --</option>
+          </select>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Cash Amount</label>
+            <input type="number" class="form-control" id="saleCash" placeholder="0" value="0"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Online Amount</label>
+            <input type="number" class="form-control" id="saleOnline" placeholder="0" value="0"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Credit Amount</label>
+            <input type="number" class="form-control" id="saleCredit" placeholder="0" value="0"/>
+          </div>
+        </div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="saleNote" placeholder="e.g. Table 2 - 2 hours"/></div>
+        <div style="background:#f1f5f9;padding:12px;border-radius:8px;font-size:.85rem">
+          <strong>Note:</strong> Credit amount tabhi dalein jab customer udhar le rha ho. Customer select karna zaruri hai credit ke liye.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveSale()"><i class="bi bi-check-lg me-1"></i> Save Sale</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD CUSTOMER MODAL ═══════════ -->
+<div class="modal fade" id="custModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="custModalTitle">Add Credit Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="custId"/>
+        <div class="mb-3"><label class="form-label">Customer Name *</label><input type="text" class="form-control" id="custName" placeholder="e.g. Mirza Zain"/></div>
+        <div class="mb-3"><label class="form-label">Phone</label><input type="text" class="form-control" id="custPhone" placeholder="0300-1234567"/></div>
+        <div class="mb-3"><label class="form-label">Previous Credit (if any)</label><input type="number" class="form-control" id="custPrev" placeholder="0" value="0"/></div>
+        <div class="mb-3"><label class="form-label">Note</label><textarea class="form-control" id="custNote"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveCustomer()"><i class="bi bi-check-lg me-1"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADD CREDIT/RECOVERY ENTRY MODAL ═══════════ -->
+<div class="modal fade" id="creditModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="creditModalTitle">Add Credit Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="creditCustId"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="creditDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Entry Type *</label>
+          <select class="form-select" id="creditType">
+            <option value="credit">Credit Given (Udhar diya)</option>
+            <option value="recovery">Recovery (Money received)</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="creditAmount" placeholder="0"/></div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="creditNote" placeholder="e.g. Table game / payment received"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveCreditEntry()"><i class="bi bi-check-lg me-1"></i> Save Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EXPENSE MODAL ═══════════ -->
+<div class="modal fade" id="expModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Expense</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="expId"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="expDate"/></div>
+        <div class="mb-3"><label class="form-label">Description *</label><input type="text" class="form-control" id="expDesc" placeholder="e.g. Meal, Ice, Tea"/></div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="expAmount" placeholder="0"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveExpense()"><i class="bi bi-check-lg me-1"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EMPLOYEE MODAL ═══════════ -->
+<div class="modal fade" id="empModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="empModalTitle">Add Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empIdInput"/>
+        <div class="mb-3"><label class="form-label">Name *</label><input type="text" class="form-control" id="empName" placeholder="e.g. Umar, Razaq"/></div>
+        <div class="mb-3"><label class="form-label">Basic Salary</label><input type="number" class="form-control" id="empBasic" placeholder="20000"/></div>
+        <div class="mb-3"><label class="form-label">Meal Allowance</label><input type="number" class="form-control" id="empMeal" placeholder="5000"/></div>
+        <div class="mb-3"><label class="form-label">Phone</label><input type="text" class="form-control" id="empPhone"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveEmployee()"><i class="bi bi-check-lg me-1"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EMPLOYEE PAYMENT MODAL ═══════════ -->
+<div class="modal fade" id="empPayModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Payment / Advance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="empPayId"/>
+        <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="empPayDate"/></div>
+        <div class="mb-3">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="empPayType">
+            <option value="salary">Basic Salary</option>
+            <option value="meal">Meal Payment</option>
+            <option value="advance">Advance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="empPayAmount" placeholder="0"/></div>
+        <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="empPayNote"/></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-out" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-pri" onclick="saveEmpPayment()"><i class="bi bi-check-lg me-1"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Firebase Configuration & Helpers -->
+<script type="module" src="firebase-config.js"></script>
+
+<script>
+  // ═════════ Wait for Firebase to load ═════════
+  function waitForBMS(callback){
+    if(window.BMS){ callback(); return; }
+    setTimeout(() => waitForBMS(callback), 50);
+  }
+
+  // ═════════ AUTH GUARD ═════════
+  (function authGuard(){
+    let session = null;
+    try{ session = JSON.parse(localStorage.getItem('bms_session') || sessionStorage.getItem('bms_session')); }catch(e){}
+    if(!session){ window.location.href = 'admin-dashboard.html'; return; }
+    if(session.role === 'manager' && session.biz !== 'basement'){
+      alert('Aap ko iss business ka access nahi hai!');
+      window.location.href = 'admin-dashboard.html';
+      return;
+    }
+    // setup back button to go to admin
+    window.__SESSION = session;
+  })();
+
+  // ═════════ DB (Firebase-backed with local cache) ═════════
+  const BIZ = 'basement';
+  // Firebase doc path: businesses/basement
+  // Andar fields: sales[], customers[], expenses[], employees[]
+  const _cache = {};
+
+  const DB = {
+    // Sync read from cache (fast — cache pre-loaded by initial loader)
+    get(k, def){
+      return _cache[k] !== undefined ? _cache[k] : def;
+    },
+    // Async write to Firebase (but updates cache instantly so UI is snappy)
+    set(k, v){
+      _cache[k] = v;
+      // Save to Firebase in background (no await — old code is sync)
+      if(window.BMS){
+        window.BMS.set('businesses', BIZ, { ..._cache, updatedAt: new Date().toISOString() })
+          .catch(e => {
+            console.error('Firebase save failed:', e);
+            toast('Save fail. Check internet.', 'error');
+          });
+      }
+    }
+  };
+
+  // ═════════ Load initial data from Firebase ═════════
+  async function loadInitialData(){
+    try {
+      const doc = await window.BMS.getOne('businesses', BIZ);
+      if(doc){
+        // Copy all fields except metadata
+        Object.keys(doc).forEach(k => {
+          if(k !== 'id' && k !== 'updatedAt') _cache[k] = doc[k];
+        });
+      }
+      console.log('✅ Snooker Basement data loaded from Firebase');
+    } catch(e){
+      console.error('Initial load failed:', e);
+      toast('Firebase connection failed. Check internet.', 'error');
+    }
+  }
+
+  // ═════════ HELPERS ═════════
+  function toast(msg, type='success'){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast-msg show' + (type==='error'?' error':'');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  }
+  function fmt(n){ return '₨' + (n||0).toLocaleString() }
+  function todayStr(){ return new Date().toISOString().split('T')[0] }
+  function isToday(d){ return d === todayStr() }
+  function isThisMonth(d){
+    if(!d) return false;
+    const [y,m] = d.split('-');
+    const now = new Date();
+    return parseInt(y) === now.getFullYear() && parseInt(m) === (now.getMonth()+1);
+  }
+  function fmtDate(d){
+    if(!d) return '—';
+    const [y,m,dd] = d.split('-');
+    return `${dd}/${m}/${y}`;
+  }
+
+  // ═════════ NAV ═════════
+  function showTab(id, btn){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    if(id==='dashboard') renderDashboard();
+    if(id==='sales') renderSales();
+    if(id==='credit') renderCustomers();
+    if(id==='expenses') renderExpenses();
+    if(id==='employees') renderEmployees();
+    window.scrollTo(0,0);
+  }
+
+  function goBack(){ window.location.href = 'admin-dashboard.html'; }
+
+  function backToCredit(){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-credit').classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    renderCustomers();
+  }
+
+  // ═════════ DASHBOARD ═════════
+  function renderDashboard(){
+    document.getElementById('todayDate').textContent = fmtDate(todayStr());
+
+    const sales = DB.get('sales', []);
+    const customers = DB.get('customers', []);
+    const expenses = DB.get('expenses', []);
+
+    // Today
+    const todaySales = sales.filter(s => isToday(s.date));
+    const todayCash = todaySales.reduce((sum,s) => sum + (s.cash||0), 0);
+    const todayOnline = todaySales.reduce((sum,s) => sum + (s.online||0), 0);
+    const todayCredit = todaySales.reduce((sum,s) => sum + (s.credit||0), 0);
+    const todayTotal = todayCash + todayOnline + todayCredit;
+
+    // Today's recoveries
+    let todayRecovered = 0;
+    customers.forEach(c => {
+      (c.entries || []).forEach(e => {
+        if(isToday(e.date) && e.type === 'recovery') todayRecovered += (e.amount || 0);
+      });
+    });
+
+    const todayExp = expenses.filter(e => isToday(e.date)).reduce((sum,e) => sum + (e.amount||0), 0);
+
+    document.getElementById('dashTodaySale').textContent = fmt(todayTotal);
+    document.getElementById('dashCash').textContent = fmt(todayCash);
+    document.getElementById('dashOnline').textContent = fmt(todayOnline);
+    document.getElementById('dashCredit').textContent = fmt(todayCredit);
+    document.getElementById('dashRecovered').textContent = fmt(todayRecovered);
+    document.getElementById('dashExpense').textContent = fmt(todayExp);
+
+    // Month
+    const monthSales = sales.filter(s => isThisMonth(s.date));
+    const monthSaleTotal = monthSales.reduce((sum,s) => sum + (s.cash||0) + (s.online||0) + (s.credit||0), 0);
+    const monthExp = expenses.filter(e => isThisMonth(e.date)).reduce((sum,e) => sum + (e.amount||0), 0);
+    const totalOutstanding = customers.reduce((sum,c) => sum + getOutstanding(c), 0);
+    const profit = monthSaleTotal - monthExp;
+
+    document.getElementById('dashMonthSale').textContent = fmt(monthSaleTotal);
+    document.getElementById('dashTotalCredit').textContent = fmt(totalOutstanding);
+    document.getElementById('dashMonthExp').textContent = fmt(monthExp);
+    document.getElementById('dashProfit').textContent = fmt(profit);
+
+    // Recent sales table
+    const recentSales = [...sales].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,5);
+    const rsHtml = recentSales.length === 0
+      ? '<tbody><tr><td><div class="empty" style="padding:20px"><i class="bi bi-cash"></i><p>No sales yet</p></div></td></tr></tbody>'
+      : `<thead><tr><th>Date</th><th>Total</th><th>Type</th></tr></thead><tbody>` +
+        recentSales.map(s => {
+          const total = (s.cash||0) + (s.online||0) + (s.credit||0);
+          let type = [];
+          if(s.cash) type.push('Cash');
+          if(s.online) type.push('Online');
+          if(s.credit) type.push('Credit');
+          return `<tr><td>${fmtDate(s.date)}</td><td style="font-weight:700;color:#5b21b6">${fmt(total)}</td><td style="font-size:.78rem;color:#64748b">${type.join(' + ')}</td></tr>`;
+        }).join('') + '</tbody>';
+    document.getElementById('recentSalesTable').innerHTML = rsHtml;
+
+    // Top credit
+    const topCredit = [...customers].sort((a,b) => getOutstanding(b) - getOutstanding(a)).slice(0,5).filter(c => getOutstanding(c) > 0);
+    const tcHtml = topCredit.length === 0
+      ? '<tbody><tr><td><div class="empty" style="padding:20px"><i class="bi bi-emoji-smile"></i><p>No outstanding credit!</p></div></td></tr></tbody>'
+      : `<thead><tr><th>Customer</th><th>Outstanding</th></tr></thead><tbody>` +
+        topCredit.map(c => `<tr class="clickable" onclick="viewCustomer('${c.id}')"><td><strong>${c.name}</strong></td><td style="color:#ef4444;font-weight:700">${fmt(getOutstanding(c))}</td></tr>`).join('') + '</tbody>';
+    document.getElementById('topCreditTable').innerHTML = tcHtml;
+  }
+
+  // ═════════ SALES ═════════
+  function resetSaleForm(){
+    document.getElementById('saleId').value = '';
+    document.getElementById('saleDate').value = todayStr();
+    ['saleCash','saleOnline','saleCredit'].forEach(id => document.getElementById(id).value = 0);
+    document.getElementById('saleNote').value = '';
+
+    // populate customer dropdown
+    const customers = DB.get('customers', []);
+    const sel = document.getElementById('saleCust');
+    sel.innerHTML = '<option value="">-- Walk-in / No customer --</option>' +
+      customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  function saveSale(){
+    const cash = parseFloat(document.getElementById('saleCash').value) || 0;
+    const online = parseFloat(document.getElementById('saleOnline').value) || 0;
+    const credit = parseFloat(document.getElementById('saleCredit').value) || 0;
+    if(cash+online+credit <= 0){ toast('Kam se kam koi ek amount enter karein','error'); return; }
+
+    const custId = document.getElementById('saleCust').value;
+    if(credit > 0 && !custId){ toast('Credit ke liye customer select karna zaruri hai','error'); return; }
+
+    const sales = DB.get('sales', []);
+    const id = document.getElementById('saleId').value;
+    const date = document.getElementById('saleDate').value || todayStr();
+
+    // get customer name for display
+    let custName = '';
+    if(custId){
+      const customers = DB.get('customers', []);
+      const c = customers.find(x => x.id === custId);
+      if(c) custName = c.name;
+    }
+
+    const data = {
+      id: id || 'S'+Date.now(),
+      date,
+      cash, online, credit,
+      custId, custName,
+      note: document.getElementById('saleNote').value.trim()
+    };
+
+    if(id){
+      const idx = sales.findIndex(s => s.id === id);
+      sales[idx] = data;
+    } else {
+      sales.push(data);
+      // also auto-add credit entry to customer
+      if(credit > 0 && custId){
+        const customers = DB.get('customers', []);
+        const c = customers.find(x => x.id === custId);
+        c.entries = c.entries || [];
+        c.entries.push({
+          id: 'CE'+Date.now(),
+          date, type:'credit', amount: credit,
+          note: data.note || 'From sale',
+          fromSale: data.id
+        });
+        DB.set('customers', customers);
+      }
+    }
+    DB.set('sales', sales);
+    bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide();
+    renderSales();
+    toast('Sale entry add ho gayi');
+  }
+
+  function deleteSale(id){
+    if(!confirm('Yeh sale entry delete karein?')) return;
+    let sales = DB.get('sales', []);
+    const s = sales.find(x => x.id === id);
+    if(s && s.credit > 0 && s.custId){
+      // also remove related credit entry
+      const customers = DB.get('customers', []);
+      const c = customers.find(x => x.id === s.custId);
+      if(c) c.entries = (c.entries || []).filter(e => e.fromSale !== id);
+      DB.set('customers', customers);
+    }
+    sales = sales.filter(x => x.id !== id);
+    DB.set('sales', sales);
+    renderSales();
+    toast('Sale deleted');
+  }
+
+  function renderSales(){
+    const sales = DB.get('sales', []).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const tbody = document.getElementById('salesTable');
+    if(sales.length === 0){
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><i class="bi bi-cash"></i><p>No records yet</p><p style="font-size:.8rem">"Add Sale" button se entry add karein</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = sales.map(s => {
+      const total = (s.cash||0) + (s.online||0) + (s.credit||0);
+      return `<tr>
+        <td>${fmtDate(s.date)}</td>
+        <td>${s.custName ? `<strong>${s.custName}</strong>` : '<span style="color:#94a3b8">Walk-in</span>'}</td>
+        <td style="color:#10b981;font-weight:600">${s.cash ? fmt(s.cash) : '—'}</td>
+        <td style="color:#0ea5e9;font-weight:600">${s.online ? fmt(s.online) : '—'}</td>
+        <td style="color:#ef4444;font-weight:600">${s.credit ? fmt(s.credit) : '—'}</td>
+        <td style="font-weight:700;color:#5b21b6">${fmt(total)}</td>
+        <td style="color:#64748b;font-size:.82rem">${s.note || '—'}</td>
+        <td><button class="btn-icon danger" onclick="deleteSale('${s.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ═════════ CUSTOMERS ═════════
+  function resetCustForm(){
+    document.getElementById('custId').value = '';
+    document.getElementById('custModalTitle').textContent = 'Add Credit Customer';
+    ['custName','custPhone','custNote'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('custPrev').value = 0;
+  }
+
+  function saveCustomer(){
+    const name = document.getElementById('custName').value.trim();
+    if(!name){ toast('Name required','error'); return; }
+    const customers = DB.get('customers', []);
+    const id = document.getElementById('custId').value;
+    const prev = parseFloat(document.getElementById('custPrev').value) || 0;
+
+    if(id){
+      const idx = customers.findIndex(c => c.id === id);
+      customers[idx].name = name;
+      customers[idx].phone = document.getElementById('custPhone').value.trim();
+      customers[idx].note = document.getElementById('custNote').value.trim();
+    } else {
+      const newC = {
+        id: 'CU'+Date.now(),
+        name,
+        phone: document.getElementById('custPhone').value.trim(),
+        note: document.getElementById('custNote').value.trim(),
+        entries: []
+      };
+      if(prev > 0){
+        newC.entries.push({
+          id: 'CE'+Date.now(),
+          date: todayStr(),
+          type:'credit',
+          amount: prev,
+          note: 'Previous balance (opening)'
+        });
+      }
+      customers.push(newC);
+    }
+    DB.set('customers', customers);
+    bootstrap.Modal.getInstance(document.getElementById('custModal')).hide();
+    renderCustomers();
+    toast(id ? 'Customer updated' : 'Customer add ho gaya');
+  }
+
+  function editCustomer(id, e){
+    if(e) e.stopPropagation();
+    const customers = DB.get('customers', []);
+    const c = customers.find(x => x.id === id);
+    if(!c) return;
+    document.getElementById('custId').value = c.id;
+    document.getElementById('custModalTitle').textContent = 'Edit Customer';
+    document.getElementById('custName').value = c.name;
+    document.getElementById('custPhone').value = c.phone || '';
+    document.getElementById('custNote').value = c.note || '';
+    document.getElementById('custPrev').value = 0;
+    new bootstrap.Modal(document.getElementById('custModal')).show();
+  }
+
+  function deleteCustomer(id, e){
+    if(e) e.stopPropagation();
+    if(!confirm('Yeh customer aur uska sara credit history delete ho jayega. Sure?')) return;
+    let customers = DB.get('customers', []);
+    customers = customers.filter(c => c.id !== id);
+    DB.set('customers', customers);
+    renderCustomers();
+    toast('Customer delete ho gaya');
+  }
+
+  function getTotalCredit(c){
+    return (c.entries || []).filter(e => e.type === 'credit').reduce((s,e) => s + (e.amount||0), 0);
+  }
+  function getRecovered(c){
+    return (c.entries || []).filter(e => e.type === 'recovery').reduce((s,e) => s + (e.amount||0), 0);
+  }
+  function getOutstanding(c){
+    return getTotalCredit(c) - getRecovered(c);
+  }
+
+  function renderCustomers(){
+    const customers = DB.get('customers', []);
+    const tbody = document.getElementById('custTable');
+    if(customers.length === 0){
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><i class="bi bi-person-plus"></i><p>No records yet</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = customers.map((c,i) => {
+      const tc = getTotalCredit(c);
+      const r = getRecovered(c);
+      const o = getOutstanding(c);
+      return `<tr class="clickable" onclick="viewCustomer('${c.id}')">
+        <td>${String(i+1).padStart(3,'0')}</td>
+        <td><strong>${c.name}</strong></td>
+        <td>${c.phone || '—'}</td>
+        <td style="color:#ef4444;font-weight:600">${fmt(tc)}</td>
+        <td style="color:#10b981;font-weight:600">${fmt(r)}</td>
+        <td style="color:${o>0?'#ef4444':'#10b981'};font-weight:700">${fmt(o)}</td>
+        <td>
+          <button class="btn-icon primary" onclick="editCustomer('${c.id}',event)"><i class="bi bi-pencil"></i></button>
+          <button class="btn-icon danger" onclick="deleteCustomer('${c.id}',event)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function viewCustomer(id){
+    const customers = DB.get('customers', []);
+    const c = customers.find(x => x.id === id);
+    if(!c) return;
+    const tc = getTotalCredit(c);
+    const r = getRecovered(c);
+    const o = getOutstanding(c);
+
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-custDetail').classList.add('active');
+
+    const entries = [...(c.entries || [])].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+    document.getElementById('custDetailContent').innerHTML = `
+      <div class="detail-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3>${c.name}</h3>
+            <div style="font-size:.85rem;opacity:.9;margin-top:6px"><i class="bi bi-telephone-fill me-1"></i> ${c.phone || '—'}</div>
+            ${c.note ? `<div style="font-size:.82rem;opacity:.85;margin-top:4px"><i class="bi bi-sticky-fill me-1"></i> ${c.note}</div>` : ''}
+          </div>
+          <button class="top-btn" onclick="openCreditModal('${c.id}')">
+            <i class="bi bi-plus-lg me-1"></i> Add Entry
+          </button>
+        </div>
+        <div class="credit-summary">
+          <div class="credit-box"><div class="lbl">Total Credit</div><div class="val">${fmt(tc)}</div></div>
+          <div class="credit-box"><div class="lbl">Recovered</div><div class="val">${fmt(r)}</div></div>
+          <div class="credit-box" style="background:rgba(239,68,68,.25)"><div class="lbl">Outstanding</div><div class="val">${fmt(o)}</div></div>
+        </div>
+      </div>
+
+      <div class="card-box">
+        <div class="card-head"><h6>Credit History</h6></div>
+        <div class="card-body-p" style="padding:14px">
+          ${entries.length === 0 ? '<div class="empty"><i class="bi bi-clock-history"></i><p>No entries yet</p></div>' :
+            entries.map(e => `
+              <div class="timeline-item" style="border-left-color:${e.type==='credit'?'#ef4444':'#10b981'}">
+                <div class="timeline-date">${fmtDate(e.date)}</div>
+                <div class="timeline-content">
+                  <strong style="color:${e.type==='credit'?'#ef4444':'#10b981'}">
+                    ${e.type==='credit' ? '+ ' + fmt(e.amount) + ' (Credit)' : '- ' + fmt(e.amount) + ' (Recovery)'}
+                  </strong>
+                  <div style="font-size:.82rem;color:#64748b">${e.note || '—'}</div>
+                </div>
+                <button class="btn-icon danger" onclick="deleteCreditEntry('${c.id}','${e.id}')"><i class="bi bi-trash"></i></button>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    `;
+    window.scrollTo(0,0);
+  }
+
+  function openCreditModal(custId){
+    document.getElementById('creditCustId').value = custId;
+    document.getElementById('creditDate').value = todayStr();
+    document.getElementById('creditType').value = 'credit';
+    document.getElementById('creditAmount').value = '';
+    document.getElementById('creditNote').value = '';
+    new bootstrap.Modal(document.getElementById('creditModal')).show();
+  }
+
+  function saveCreditEntry(){
+    const cid = document.getElementById('creditCustId').value;
+    const amount = parseFloat(document.getElementById('creditAmount').value) || 0;
+    if(amount <= 0){ toast('Amount enter karein','error'); return; }
+    const customers = DB.get('customers', []);
+    const c = customers.find(x => x.id === cid);
+    c.entries = c.entries || [];
+    c.entries.push({
+      id: 'CE'+Date.now(),
+      date: document.getElementById('creditDate').value || todayStr(),
+      type: document.getElementById('creditType').value,
+      amount,
+      note: document.getElementById('creditNote').value.trim()
+    });
+    DB.set('customers', customers);
+    bootstrap.Modal.getInstance(document.getElementById('creditModal')).hide();
+    viewCustomer(cid);
+    toast('Entry add ho gayi');
+  }
+
+  function deleteCreditEntry(cid, eid){
+    if(!confirm('Delete this entry?')) return;
+    const customers = DB.get('customers', []);
+    const c = customers.find(x => x.id === cid);
+    c.entries = c.entries.filter(e => e.id !== eid);
+    DB.set('customers', customers);
+    viewCustomer(cid);
+    toast('Entry delete ho gayi');
+  }
+
+  // ═════════ EXPENSES ═════════
+  function resetExpForm(){
+    document.getElementById('expId').value = '';
+    document.getElementById('expDate').value = todayStr();
+    document.getElementById('expDesc').value = '';
+    document.getElementById('expAmount').value = '';
+  }
+
+  function saveExpense(){
+    const desc = document.getElementById('expDesc').value.trim();
+    const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+    if(!desc || amount <= 0){ toast('Description aur amount enter karein','error'); return; }
+    const expenses = DB.get('expenses', []);
+    const id = document.getElementById('expId').value;
+    const data = {
+      id: id || 'E'+Date.now(),
+      date: document.getElementById('expDate').value || todayStr(),
+      desc,
+      amount
+    };
+    if(id){
+      const idx = expenses.findIndex(e => e.id === id);
+      expenses[idx] = data;
+    } else {
+      expenses.push(data);
+    }
+    DB.set('expenses', expenses);
+    bootstrap.Modal.getInstance(document.getElementById('expModal')).hide();
+    const mf = document.getElementById('expMonthFilter');
+    if(mf) mf.value = (data.date||'').slice(0,7);
+    renderExpenses();
+    toast('Expense save ho gaya');
+  }
+
+  function deleteExpense(id){
+    if(!confirm('Delete this expense?')) return;
+    let expenses = DB.get('expenses', []);
+    expenses = expenses.filter(e => e.id !== id);
+    DB.set('expenses', expenses);
+    renderExpenses();
+    toast('Expense deleted');
+  }
+
+  function renderExpenses(){
+    const mf = document.getElementById('expMonthFilter');
+    if(mf && !mf.value){ const n=new Date(); mf.value = n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); }
+    const selMonth = mf ? mf.value : '';
+    const expenses = DB.get('expenses', []).filter(e => (e.date||'').startsWith(selMonth)).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    const tbody = document.getElementById('expTable');
+    if(expenses.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><i class="bi bi-receipt"></i><p>Iss month koi expense nahi hai</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = expenses.map(e => `
+      <tr>
+        <td>${fmtDate(e.date)}</td>
+        <td><strong>${e.desc}</strong></td>
+        <td style="color:#ef4444;font-weight:700">${fmt(e.amount)}</td>
+        <td><button class="btn-icon danger" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash"></i></button></td>
+      </tr>
+    `).join('');
+  }
+
+  // ═════════ EMPLOYEES ═════════
+  function resetEmpForm(){
+    document.getElementById('empIdInput').value = '';
+    document.getElementById('empModalTitle').textContent = 'Add Employee';
+    ['empName','empBasic','empMeal','empPhone'].forEach(id => document.getElementById(id).value='');
+  }
+
+  function saveEmployee(){
+    const name = document.getElementById('empName').value.trim();
+    if(!name){ toast('Name required','error'); return; }
+    const emps = DB.get('employees', []);
+    const id = document.getElementById('empIdInput').value;
+    const data = {
+      id: id || 'EM'+Date.now(),
+      name,
+      basic: parseFloat(document.getElementById('empBasic').value) || 0,
+      meal: parseFloat(document.getElementById('empMeal').value) || 0,
+      phone: document.getElementById('empPhone').value.trim()
+    };
+    if(id){
+      const idx = emps.findIndex(e => e.id === id);
+      data.payments = emps[idx].payments || [];
+      emps[idx] = data;
+    } else {
+      data.payments = [];
+      emps.push(data);
+    }
+    DB.set('employees', emps);
+    bootstrap.Modal.getInstance(document.getElementById('empModal')).hide();
+    renderEmployees();
+    toast('Employee save ho gaya');
+  }
+
+  function editEmp(id, e){
+    if(e) e.stopPropagation();
+    const emps = DB.get('employees', []);
+    const emp = emps.find(x => x.id === id);
+    document.getElementById('empIdInput').value = emp.id;
+    document.getElementById('empModalTitle').textContent = 'Edit Employee';
+    document.getElementById('empName').value = emp.name;
+    document.getElementById('empBasic').value = emp.basic || 0;
+    document.getElementById('empMeal').value = emp.meal || 0;
+    document.getElementById('empPhone').value = emp.phone || '';
+    new bootstrap.Modal(document.getElementById('empModal')).show();
+  }
+
+  function deleteEmp(id, e){
+    if(e) e.stopPropagation();
+    if(!confirm('Delete employee?')) return;
+    let emps = DB.get('employees', []);
+    emps = emps.filter(x => x.id !== id);
+    DB.set('employees', emps);
+    renderEmployees();
+    toast('Employee deleted');
+  }
+
+  function renderEmployees(){
+    const emps = DB.get('employees', []);
+    const tbody = document.getElementById('empTable');
+    if(emps.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><i class="bi bi-person-badge"></i><p>No employees yet</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = emps.map(e => `
+      <tr>
+        <td><strong>${e.name}</strong>${e.phone?`<br><small style="color:#94a3b8">${e.phone}</small>`:''}</td>
+        <td style="color:#5b21b6;font-weight:600">${fmt(e.basic)}</td>
+        <td style="color:#f59e0b;font-weight:600">${fmt(e.meal)}</td>
+        <td style="color:#2563eb;font-weight:700">${fmt((e.basic||0)+(e.meal||0))}</td>
+        <td>
+          <button class="btn-icon primary" onclick="openEmpPay('${e.id}')" title="Add Payment"><i class="bi bi-cash"></i></button>
+          <button class="btn-icon primary" onclick="editEmp('${e.id}',event)"><i class="bi bi-pencil"></i></button>
+          <button class="btn-icon danger" onclick="deleteEmp('${e.id}',event)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openEmpPay(empId){
+    document.getElementById('empPayId').value = empId;
+    document.getElementById('empPayDate').value = todayStr();
+    document.getElementById('empPayType').value = 'salary';
+    document.getElementById('empPayAmount').value = '';
+    document.getElementById('empPayNote').value = '';
+    new bootstrap.Modal(document.getElementById('empPayModal')).show();
+  }
+
+  function saveEmpPayment(){
+    const eid = document.getElementById('empPayId').value;
+    const amount = parseFloat(document.getElementById('empPayAmount').value) || 0;
+    if(amount <= 0){ toast('Amount enter karein','error'); return; }
+    const emps = DB.get('employees', []);
+    const emp = emps.find(x => x.id === eid);
+    emp.payments = emp.payments || [];
+    emp.payments.push({
+      id: 'EP'+Date.now(),
+      date: document.getElementById('empPayDate').value || todayStr(),
+      type: document.getElementById('empPayType').value,
+      amount,
+      note: document.getElementById('empPayNote').value.trim()
+    });
+    DB.set('employees', emps);
+    bootstrap.Modal.getInstance(document.getElementById('empPayModal')).hide();
+    toast('Payment record ho gaya');
+  }
+
+  // ═════════ INIT ═════════
+  // Show loader while Firebase loads
+  document.body.style.opacity = '0.3';
+  document.body.style.pointerEvents = 'none';
+
+  waitForBMS(async () => {
+    await loadInitialData();
+    document.body.style.opacity = '1';
+    document.body.style.pointerEvents = 'auto';
+    renderDashboard();
+  });
+</script>
+</body>
+</html>
