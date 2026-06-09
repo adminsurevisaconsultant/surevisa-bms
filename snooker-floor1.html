@@ -176,7 +176,19 @@
       <div class="col-6 col-md-4 col-lg-2"><div class="stat-card"><i class="bi bi-receipt stat-icon" style="color:#64748b"></i><div class="stat-value" style="color:#64748b" id="dashExpense">₨0</div><div class="stat-label">Today Expenses</div></div></div>
     </div>
 
-    <div class="section-label">This Month</div>
+    <div class="section-label" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="periodLabel">This Month</span>
+      <select id="periodFilter" class="form-select form-select-sm" style="width:auto;font-size:.8rem" onchange="onPeriodChange()">
+        <option value="thismonth">This Month</option>
+        <option value="lastmonth">Last Month</option>
+        <option value="custom">Custom Range</option>
+      </select>
+      <span id="customRange" style="display:none;gap:6px;align-items:center">
+        <input type="date" id="periodFrom" class="form-control form-control-sm" style="width:auto" onchange="renderDashboard()"/>
+        <span style="color:#94a3b8">to</span>
+        <input type="date" id="periodTo" class="form-control form-control-sm" style="width:auto" onchange="renderDashboard()"/>
+      </span>
+    </div>
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#047857" id="dashMonthSale">₨0</div><div class="stat-label">Total Sale</div></div></div>
       <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#ef4444" id="dashTotalCredit">₨0</div><div class="stat-label">Total Outstanding Credit</div></div></div>
@@ -554,6 +566,41 @@
     return `${dd}/${m}/${y}`;
   }
 
+  // ═════════ PERIOD FILTER ═════════
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function getPeriodRange(){
+    const f = document.getElementById('periodFilter');
+    const mode = f ? f.value : 'thismonth';
+    const now = new Date();
+    let from, to, label;
+    if(mode === 'lastmonth'){
+      from = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      to = new Date(now.getFullYear(), now.getMonth(), 0);
+      label = 'Last Month';
+    } else if(mode === 'custom'){
+      const fv = document.getElementById('periodFrom').value;
+      const tv = document.getElementById('periodTo').value;
+      from = fv ? new Date(fv+'T00:00:00') : new Date(now.getFullYear(), now.getMonth(), 1);
+      to = tv ? new Date(tv+'T00:00:00') : now;
+      label = 'Custom';
+    } else {
+      from = new Date(now.getFullYear(), now.getMonth(), 1);
+      to = new Date(now.getFullYear(), now.getMonth()+1, 0);
+      label = 'This Month';
+    }
+    return { from: ymd(from), to: ymd(to), label };
+  }
+  function inPeriod(d){
+    if(!d) return false;
+    const r = getPeriodRange();
+    return d >= r.from && d <= r.to;
+  }
+  function onPeriodChange(){
+    const mode = document.getElementById('periodFilter').value;
+    document.getElementById('customRange').style.display = mode === 'custom' ? 'inline-flex' : 'none';
+    renderDashboard();
+  }
+
   // ═════════ NAV ═════════
   function showTab(id, btn){
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -610,10 +657,12 @@
     document.getElementById('dashRecovered').textContent = fmt(todayRecovered);
     document.getElementById('dashExpense').textContent = fmt(todayExp);
 
-    // Month
-    const monthSales = sales.filter(s => isThisMonth(s.date));
+    // Period (This Month / Last Month / Custom)
+    const range = getPeriodRange();
+    document.getElementById('periodLabel').textContent = range.label + ' (' + fmtDate(range.from) + ' – ' + fmtDate(range.to) + ')';
+    const monthSales = sales.filter(s => inPeriod(s.date));
     const monthSaleTotal = monthSales.reduce((sum,s) => sum + (s.cash||0) + (s.online||0) + (s.credit||0), 0);
-    const monthExp = expenses.filter(e => isThisMonth(e.date)).reduce((sum,e) => sum + (e.amount||0), 0);
+    const monthExp = expenses.filter(e => inPeriod(e.date)).reduce((sum,e) => sum + (e.amount||0), 0);
     const totalOutstanding = customers.reduce((sum,c) => sum + getOutstanding(c), 0);
     const profit = monthSaleTotal - monthExp;
 

@@ -300,7 +300,20 @@
 
     <!-- ── HOME DASHBOARD ── -->
     <div class="page active" id="page-home">
-      <div class="section-label">Overview – All Businesses</div>
+      <div class="section-label" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span>Overview – All Businesses</span>
+        <select id="periodFilter" class="form-select form-select-sm" style="width:auto;font-size:.8rem" onchange="onPeriodChange()">
+          <option value="thismonth">This Month</option>
+          <option value="lastmonth">Last Month</option>
+          <option value="all">All Time</option>
+          <option value="custom">Custom Range</option>
+        </select>
+        <span id="customRange" style="display:none;gap:6px;align-items:center">
+          <input type="date" id="periodFrom" class="form-control form-control-sm" style="width:auto" onchange="refreshStats()"/>
+          <span style="color:#94a3b8">to</span>
+          <input type="date" id="periodTo" class="form-control form-control-sm" style="width:auto" onchange="refreshStats()"/>
+        </span>
+      </div>
       <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
           <div class="stat-card">
@@ -1066,6 +1079,43 @@
   // ───────── BIZ GRID (overview page) ─────────
   // ───────── BUSINESS STATS HELPER ─────────
   // Har business ka data Firebase se padhke calculate karta hai
+  // ═════════ PERIOD FILTER ═════════
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function getAdminPeriod(){
+    const f = document.getElementById('periodFilter');
+    const mode = f ? f.value : 'thismonth';
+    const now = new Date();
+    if(mode === 'all') return { from: '0000-00-00', to: '9999-99-99', label: 'All Time', all: true };
+    let from, to, label;
+    if(mode === 'lastmonth'){
+      from = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      to = new Date(now.getFullYear(), now.getMonth(), 0);
+      label = 'Last Month';
+    } else if(mode === 'custom'){
+      const fv = document.getElementById('periodFrom').value;
+      const tv = document.getElementById('periodTo').value;
+      from = fv ? new Date(fv+'T00:00:00') : new Date(now.getFullYear(), now.getMonth(), 1);
+      to = tv ? new Date(tv+'T00:00:00') : now;
+      label = 'Custom';
+    } else {
+      from = new Date(now.getFullYear(), now.getMonth(), 1);
+      to = new Date(now.getFullYear(), now.getMonth()+1, 0);
+      label = 'This Month';
+    }
+    return { from: ymd(from), to: ymd(to), label, all: false };
+  }
+  function inAdminPeriod(d){
+    const p = getAdminPeriod();
+    if(p.all) return true;
+    if(!d) return false;
+    return d >= p.from && d <= p.to;
+  }
+  function onPeriodChange(){
+    const mode = document.getElementById('periodFilter').value;
+    document.getElementById('customRange').style.display = mode === 'custom' ? 'inline-flex' : 'none';
+    refreshStats();
+  }
+
   async function getBizStats(bizId){
     try {
       const doc = await window.BMS.getOne('businesses', bizId);
@@ -1081,9 +1131,9 @@
         clients = visaClients.length;
         records = visaClients.length;
         visaClients.forEach(c => {
-          const paid = (c.payments || []).reduce((s,p)=>s+(+p.amount||0), 0);
+          const paid = (c.payments || []).filter(p => inAdminPeriod(p.date)).reduce((s,p)=>s+(+p.amount||0), 0);
           revenue += paid;
-          pending += Math.max(0, (+c.total||0) - paid);
+          pending += Math.max(0, (+c.total||0) - (c.payments || []).reduce((s,p)=>s+(+p.amount||0), 0));
         });
         employees = emps.length;
       } else if(bizId === 'blocks'){
@@ -1091,7 +1141,7 @@
         records = sales.length;
         sales.forEach(s => {
           const total = (+s.qty||0) * (+s.rate||0);
-          revenue += (+s.paid || 0);
+          if(inAdminPeriod(s.date)) revenue += (+s.paid || 0);
           pending += Math.max(0, total - (+s.paid||0));
         });
         employees = emps.length;
@@ -1099,12 +1149,12 @@
         // Snooker (basement/floor1): each sale has cash, online, credit fields
         records = sales.length;
         sales.forEach(s => {
-          revenue += (+s.cash || 0) + (+s.online || 0);
+          if(inAdminPeriod(s.date)){ revenue += (+s.cash || 0) + (+s.online || 0); }
           pending += (+s.credit || 0);
         });
-        // Credit recovered also counts as revenue
+        // Credit recovered also counts as revenue (within period)
         (doc.customers || []).forEach(c => {
-          (c.payments || []).forEach(p => { revenue += (+p.amount || 0); });
+          (c.payments || []).forEach(p => { if(inAdminPeriod(p.date)) revenue += (+p.amount || 0); });
         });
         employees = emps.length;
       }
@@ -1172,6 +1222,8 @@
 
     // Top header totals
     document.getElementById('totalRevenue').textContent = '₨' + totalRev.toLocaleString();
+    const revLabel = document.querySelector('#totalRevenue + .stat-label');
+    if(revLabel) revLabel.textContent = 'Total Revenue (' + getAdminPeriod().label + ')';
     document.getElementById('totalEmployees').textContent = totalEmps;
     document.getElementById('totalClients').textContent = totalClients;
     document.getElementById('totalPending').textContent = '₨' + totalPending.toLocaleString();

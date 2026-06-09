@@ -189,7 +189,19 @@
       <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-bricks stat-icon" style="color:#2563eb"></i><div class="stat-value" style="color:#2563eb" id="dStockValue">₨0</div><div class="stat-label">Stock Value (material cost)</div></div></div>
     </div>
 
-    <div class="section-label">This Month</div>
+    <div class="section-label" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="periodLabel">This Month</span>
+      <select id="periodFilter" class="form-select form-select-sm" style="width:auto;font-size:.8rem" onchange="onPeriodChange()">
+        <option value="thismonth">This Month</option>
+        <option value="lastmonth">Last Month</option>
+        <option value="custom">Custom Range</option>
+      </select>
+      <span id="customRange" style="display:none;gap:6px;align-items:center">
+        <input type="date" id="periodFrom" class="form-control form-control-sm" style="width:auto" onchange="renderDashboard()"/>
+        <span style="color:#94a3b8">to</span>
+        <input type="date" id="periodTo" class="form-control form-control-sm" style="width:auto" onchange="renderDashboard()"/>
+      </span>
+    </div>
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#b45309" id="dMonthProd">0</div><div class="stat-label">Total Production</div></div></div>
       <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#10b981" id="dMonthSale">₨0</div><div class="stat-label">Total Sales</div></div></div>
@@ -874,6 +886,41 @@
     return parseInt(y) === now.getFullYear() && parseInt(m) === (now.getMonth()+1);
   }
   function fmtDate(d){ if(!d) return '—'; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}` }
+
+  // ═════════ PERIOD FILTER ═════════
+  function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function getPeriodRange(){
+    const f = document.getElementById('periodFilter');
+    const mode = f ? f.value : 'thismonth';
+    const now = new Date();
+    let from, to, label;
+    if(mode === 'lastmonth'){
+      from = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      to = new Date(now.getFullYear(), now.getMonth(), 0);
+      label = 'Last Month';
+    } else if(mode === 'custom'){
+      const fv = document.getElementById('periodFrom').value;
+      const tv = document.getElementById('periodTo').value;
+      from = fv ? new Date(fv+'T00:00:00') : new Date(now.getFullYear(), now.getMonth(), 1);
+      to = tv ? new Date(tv+'T00:00:00') : now;
+      label = 'Custom';
+    } else {
+      from = new Date(now.getFullYear(), now.getMonth(), 1);
+      to = new Date(now.getFullYear(), now.getMonth()+1, 0);
+      label = 'This Month';
+    }
+    return { from: ymd(from), to: ymd(to), label };
+  }
+  function inPeriod(d){
+    if(!d) return false;
+    const r = getPeriodRange();
+    return d >= r.from && d <= r.to;
+  }
+  function onPeriodChange(){
+    const mode = document.getElementById('periodFilter').value;
+    document.getElementById('customRange').style.display = mode === 'custom' ? 'inline-flex' : 'none';
+    renderDashboard();
+  }
 
   function showTab(id, btn){
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1845,9 +1892,11 @@
     document.getElementById('dRawValue').textContent = fmt(Math.round(rawRemainingValue()));
     document.getElementById('dStockValue').textContent = fmt(Math.round(stockValue()));
 
-    const monthProd = productions.filter(p => isThisMonth(p.date)).reduce((s,p) => s + (p.qty||0), 0);
-    const monthSale = sales.filter(s => isThisMonth(s.date)).reduce((s,x) => s + (x.total||0), 0);
-    const monthExp = expenses.filter(e => isThisMonth(e.date)).reduce((s,e) => s + (e.amount||0), 0);
+    const range = getPeriodRange();
+    document.getElementById('periodLabel').textContent = range.label + ' (' + fmtDate(range.from) + ' – ' + fmtDate(range.to) + ')';
+    const monthProd = productions.filter(p => inPeriod(p.date)).reduce((s,p) => s + (p.qty||0), 0);
+    const monthSale = sales.filter(s => inPeriod(s.date)).reduce((s,x) => s + (x.total||0), 0);
+    const monthExp = expenses.filter(e => inPeriod(e.date)).reduce((s,e) => s + (e.amount||0), 0);
     const profit = monthSale - monthExp;
 
     document.getElementById('dMonthProd').textContent = fmtN(monthProd);
