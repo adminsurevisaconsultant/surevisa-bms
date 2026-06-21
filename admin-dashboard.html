@@ -388,7 +388,7 @@
               <p>Daily Sales & Credit</p>
             </div>
             <div class="biz-stats">
-              <div><strong id="basementSale">₨0</strong><span>Profit</span></div>
+              <div><strong id="basementSale">₨0</strong><span>Net Profit</span></div>
               <div><strong id="basementCredit">₨0</strong><span>Credit</span></div>
             </div>
           </div>
@@ -402,7 +402,7 @@
               <p>Daily Sales & Credit</p>
             </div>
             <div class="biz-stats">
-              <div><strong id="floor1Sale">₨0</strong><span>Profit</span></div>
+              <div><strong id="floor1Sale">₨0</strong><span>Net Profit</span></div>
               <div><strong id="floor1Credit">₨0</strong><span>Credit</span></div>
             </div>
           </div>
@@ -1178,30 +1178,30 @@
         records = producedAll - soldAll;  // 'records' field reused as available stock for blocks card
         employees = emps.length;
       } else {
-        // Snooker (basement/floor1): revenue = cash + online from daily sales
+        // Snooker (basement/floor1): match the business page exactly
+        // Net Profit = (cash + online + credit) for period − expenses for period
         records = sales.length;
+        let saleTotal = 0, creditGiven = 0, recovered = 0, discounted = 0;
         sales.forEach(s => {
-          if(inAdminPeriod(s.date)){ revenue += (+s.cash || 0) + (+s.online || 0); }
+          if(inAdminPeriod(s.date)){
+            saleTotal += (+s.cash || 0) + (+s.online || 0) + (+s.credit || 0);
+            revenue += (+s.cash || 0) + (+s.online || 0);
+          }
         });
-        // Credit customers use entries[] with type credit / recovery / discount
-        let creditGiven = 0, recovered = 0, discounted = 0;
+        // Credit customers ledger: entries credit / recovery / discount (for outstanding)
         (doc.customers || []).forEach(c => {
           (c.entries || []).forEach(e => {
             const amt = +e.amount || 0;
             if(e.type === 'credit') creditGiven += amt;
-            else if(e.type === 'recovery'){
-              recovered += amt;
-              if(inAdminPeriod(e.date)) revenue += amt;  // recovered credit (in period) = real cash in
-            } else if(e.type === 'discount') discounted += amt;
+            else if(e.type === 'recovery') recovered += amt;
+            else if(e.type === 'discount') discounted += amt;
           });
         });
-        // Period expenses
         (doc.expenses || []).forEach(e => { if(inAdminPeriod(e.date)) expenses += (+e.amount || 0); });
-        // Outstanding = total credit − recovered − discount (full running balance)
         outstanding = Math.max(0, creditGiven - recovered - discounted);
         pending = outstanding;
-        profit = revenue - expenses;  // Snooker profit = revenue − expenses
-        net = profit;
+        net = saleTotal - expenses;   // Net Profit (matches business page)
+        profit = net;
         employees = emps.length;
       }
       return { revenue, records, pending, clients, employees, expenses, profit, outstanding, net };
@@ -1287,16 +1287,16 @@
     if(elBlocksS) elBlocksS.textContent = statsMap.blocks.records;
     if(elBlocksR) elBlocksR.textContent = '₨' + Math.round(statsMap.blocks.net).toLocaleString();
 
-    // Basement: Profit + Credit (outstanding)
+    // Basement: Net Profit + Credit (outstanding)
     const elBaseS = document.getElementById('basementSale');
     const elBaseC = document.getElementById('basementCredit');
-    if(elBaseS) elBaseS.textContent = '₨' + Math.round(statsMap.basement.profit).toLocaleString();
+    if(elBaseS) elBaseS.textContent = '₨' + Math.round(statsMap.basement.net).toLocaleString();
     if(elBaseC) elBaseC.textContent = '₨' + Math.round(statsMap.basement.outstanding).toLocaleString();
 
-    // Floor1: Profit + Credit (outstanding)
+    // Floor1: Net Profit + Credit (outstanding)
     const elF1S = document.getElementById('floor1Sale');
     const elF1C = document.getElementById('floor1Credit');
-    if(elF1S) elF1S.textContent = '₨' + Math.round(statsMap.floor1.profit).toLocaleString();
+    if(elF1S) elF1S.textContent = '₨' + Math.round(statsMap.floor1.net).toLocaleString();
     if(elF1C) elF1C.textContent = '₨' + Math.round(statsMap.floor1.outstanding).toLocaleString();
 
     // ─── Revenue by Business — bar chart ───
