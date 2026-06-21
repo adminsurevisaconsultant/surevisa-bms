@@ -1172,6 +1172,10 @@
         outstanding = pending;
         net = grossProfit - expenses;   // Net Profit = order profit − expenses
         profit = net;
+        // Available stock = total produced − total sold (all-time, not period)
+        const producedAll = (doc.productions || []).reduce((s,p)=>s+(+p.qty||0),0);
+        const soldAll = sales.reduce((s,x)=>s+(+x.qty||0),0);
+        records = producedAll - soldAll;  // 'records' field reused as available stock for blocks card
         employees = emps.length;
       } else {
         // Snooker (basement/floor1): revenue = cash + online from daily sales
