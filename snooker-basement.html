@@ -389,12 +389,21 @@
         <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="creditDate"/></div>
         <div class="mb-3">
           <label class="form-label">Entry Type *</label>
-          <select class="form-select" id="creditType">
+          <select class="form-select" id="creditType" onchange="onCreditTypeChange()">
             <option value="credit">Credit Given (Udhar diya)</option>
             <option value="recovery">Recovery (Money received)</option>
           </select>
         </div>
-        <div class="mb-3"><label class="form-label">Amount *</label><input type="number" class="form-control" id="creditAmount" placeholder="0"/></div>
+        <div class="mb-3" id="creditOutstandingRow" style="display:none">
+          <label class="form-label">Total Outstanding (current)</label>
+          <input type="number" class="form-control" id="creditOutstanding" readonly style="background:#f1f5f9;font-weight:700;color:#ef4444"/>
+        </div>
+        <div class="mb-3"><label class="form-label" id="creditAmountLabel">Amount *</label><input type="number" class="form-control" id="creditAmount" placeholder="0" oninput="updateCreditPreview()"/></div>
+        <div class="mb-3" id="creditDiscountRow" style="display:none">
+          <label class="form-label">Discount <span style="color:#94a3b8;font-weight:400">(optional — maaf kiya)</span></label>
+          <input type="number" class="form-control" id="creditDiscount" placeholder="0" value="0" oninput="updateCreditPreview()"/>
+          <div id="creditPreview" style="font-size:.82rem;color:#10b981;font-weight:600;margin-top:6px"></div>
+        </div>
         <div class="mb-3"><label class="form-label">Note</label><input type="text" class="form-control" id="creditNote" placeholder="e.g. Table game / payment received"/></div>
       </div>
       <div class="modal-footer">
@@ -884,8 +893,11 @@
   function getRecovered(c){
     return (c.entries || []).filter(e => e.type === 'recovery').reduce((s,e) => s + (e.amount||0), 0);
   }
+  function getDiscountGiven(c){
+    return (c.entries || []).filter(e => e.type === 'discount').reduce((s,e) => s + (e.amount||0), 0);
+  }
   function getOutstanding(c){
-    return getTotalCredit(c) - getRecovered(c);
+    return getTotalCredit(c) - getRecovered(c) - getDiscountGiven(c);
   }
 
   function renderCustomers(){
@@ -950,18 +962,21 @@
         <div class="card-head"><h6>Credit History</h6></div>
         <div class="card-body-p" style="padding:14px">
           ${entries.length === 0 ? '<div class="empty"><i class="bi bi-clock-history"></i><p>No entries yet</p></div>' :
-            entries.map(e => `
-              <div class="timeline-item" style="border-left-color:${e.type==='credit'?'#ef4444':'#10b981'}">
+            entries.map(e => {
+              const isCredit = e.type === 'credit';
+              const isDisc = e.type === 'discount';
+              const color = isCredit ? '#ef4444' : (isDisc ? '#f59e0b' : '#10b981');
+              const label = isCredit ? '+ ' + fmt(e.amount) + ' (Credit)' : (isDisc ? '− ' + fmt(e.amount) + ' (Discount)' : '− ' + fmt(e.amount) + ' (Recovery)');
+              return `
+              <div class="timeline-item" style="border-left-color:${color}">
                 <div class="timeline-date">${fmtDate(e.date)}</div>
                 <div class="timeline-content">
-                  <strong style="color:${e.type==='credit'?'#ef4444':'#10b981'}">
-                    ${e.type==='credit' ? '+ ' + fmt(e.amount) + ' (Credit)' : '- ' + fmt(e.amount) + ' (Recovery)'}
-                  </strong>
+                  <strong style="color:${color}">${label}</strong>
                   <div style="font-size:.82rem;color:#64748b">${e.note || '—'}</div>
                 </div>
                 <button class="btn-icon danger" onclick="deleteCreditEntry('${c.id}','${e.id}')"><i class="bi bi-trash"></i></button>
               </div>
-            `).join('')
+            `;}).join('')
           }
         </div>
       </div>
@@ -974,24 +989,56 @@
     document.getElementById('creditDate').value = todayStr();
     document.getElementById('creditType').value = 'credit';
     document.getElementById('creditAmount').value = '';
+    document.getElementById('creditDiscount').value = 0;
     document.getElementById('creditNote').value = '';
+    const c = DB.get('customers', []).find(x => x.id === custId);
+    document.getElementById('creditOutstanding').value = c ? getOutstanding(c) : 0;
+    onCreditTypeChange();
     new bootstrap.Modal(document.getElementById('creditModal')).show();
+  }
+
+  function onCreditTypeChange(){
+    const isRecovery = document.getElementById('creditType').value === 'recovery';
+    document.getElementById('creditOutstandingRow').style.display = isRecovery ? 'block' : 'none';
+    document.getElementById('creditDiscountRow').style.display = isRecovery ? 'block' : 'none';
+    document.getElementById('creditAmountLabel').textContent = isRecovery ? 'Amount Received *' : 'Amount *';
+    updateCreditPreview();
+  }
+
+  function updateCreditPreview(){
+    if(document.getElementById('creditType').value !== 'recovery') return;
+    const outstanding = parseFloat(document.getElementById('creditOutstanding').value) || 0;
+    const paid = parseFloat(document.getElementById('creditAmount').value) || 0;
+    const disc = parseFloat(document.getElementById('creditDiscount').value) || 0;
+    const remaining = outstanding - paid - disc;
+    const el = document.getElementById('creditPreview');
+    if(paid + disc <= 0){ el.textContent = ''; return; }
+    if(remaining <= 0){
+      el.style.color = '#10b981';
+      el.textContent = `✓ Khata clear! (Paid ${fmt(paid)} + Discount ${fmt(disc)} = ${fmt(paid+disc)})`;
+    } else {
+      el.style.color = '#f59e0b';
+      el.textContent = `Baqi outstanding: ${fmt(remaining)}  (Paid ${fmt(paid)} + Discount ${fmt(disc)})`;
+    }
   }
 
   function saveCreditEntry(){
     const cid = document.getElementById('creditCustId').value;
+    const type = document.getElementById('creditType').value;
     const amount = parseFloat(document.getElementById('creditAmount').value) || 0;
-    if(amount <= 0){ toast('Amount enter karein','error'); return; }
+    const disc = type === 'recovery' ? (parseFloat(document.getElementById('creditDiscount').value) || 0) : 0;
+    if(amount <= 0 && disc <= 0){ toast('Amount ya discount enter karein','error'); return; }
     const customers = DB.get('customers', []);
     const c = customers.find(x => x.id === cid);
     c.entries = c.entries || [];
-    c.entries.push({
-      id: 'CE'+Date.now(),
-      date: document.getElementById('creditDate').value || todayStr(),
-      type: document.getElementById('creditType').value,
-      amount,
-      note: document.getElementById('creditNote').value.trim()
-    });
+    const date = document.getElementById('creditDate').value || todayStr();
+    const note = document.getElementById('creditNote').value.trim();
+    if(amount > 0){
+      c.entries.push({ id:'CE'+Date.now(), date, type, amount, note });
+    }
+    if(disc > 0){
+      c.entries.push({ id:'CD'+Date.now(), date, type:'discount', amount:disc, note: note || 'Discount diya' });
+    }
     DB.set('customers', customers);
     bootstrap.Modal.getInstance(document.getElementById('creditModal')).hide();
     viewCustomer(cid);

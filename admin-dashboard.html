@@ -319,7 +319,7 @@
           <div class="stat-card">
             <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-cash-stack"></i></div>
             <div class="stat-value" id="totalRevenue">₨0</div>
-            <div class="stat-label">Total Revenue (Month)</div>
+            <div class="stat-label">Total Net Profit (Month)</div>
             <div class="stat-trend trend-up"><i class="bi bi-arrow-up-right"></i> Live data</div>
           </div>
         </div>
@@ -361,7 +361,7 @@
             </div>
             <div class="biz-stats">
               <div><strong id="visaClients">0</strong><span>Clients</span></div>
-              <div><strong id="visaRev">₨0</strong><span>Revenue</span></div>
+              <div><strong id="visaRev">₨0</strong><span>Net Profit</span></div>
             </div>
           </div>
         </div>
@@ -375,7 +375,7 @@
             </div>
             <div class="biz-stats">
               <div><strong id="blocksStock">0</strong><span>Stock</span></div>
-              <div><strong id="blocksRev">₨0</strong><span>Revenue</span></div>
+              <div><strong id="blocksRev">₨0</strong><span>Net Profit</span></div>
             </div>
           </div>
         </div>
@@ -1121,63 +1121,89 @@
       const doc = await window.BMS.getOne('businesses', bizId);
       if(!doc) return { revenue:0, records:0, pending:0, clients:0, employees:0, profit:0, outstanding:0 };
 
-      let revenue=0, records=0, pending=0, clients=0, employees=0, expenses=0, profit=0, outstanding=0;
+      let revenue=0, records=0, pending=0, clients=0, employees=0, expenses=0, profit=0, outstanding=0, net=0;
       const sales = doc.sales || [];
       const emps = doc.employees || [];
 
       if(bizId === 'visa'){
-        // Visa: clients key (not customers); each client has total fee + payments
+        // Visa: clients key; each client has total fee + payments + currency
         const visaClients = doc.clients || [];
         clients = visaClients.length;
         records = visaClients.length;
         visaClients.forEach(c => {
-          const paid = (c.payments || []).filter(p => inAdminPeriod(p.date)).reduce((s,p)=>s+(+p.amount||0), 0);
-          revenue += paid;
-          pending += Math.max(0, (+c.total||0) - (c.payments || []).reduce((s,p)=>s+(+p.amount||0), 0));
+          const rate = c.currency === 'EUR' ? 300 : c.currency === 'USD' ? 280 : c.currency === 'GBP' ? 350 : 1;
+          const paidInPeriod = (c.payments || []).filter(p => inAdminPeriod(p.date)).reduce((s,p)=>s+(+p.amount||0), 0);
+          const paidAll = (c.payments || []).reduce((s,p)=>s+(+p.amount||0), 0);
+          revenue += paidInPeriod * rate;
+          pending += Math.max(0, ((+c.total||0) - paidAll)) * rate;
         });
+        // Office expenses in period
+        (doc.expenses || []).forEach(e => { if(inAdminPeriod(e.date)) expenses += (+e.amount || 0); });
         outstanding = pending;
-        profit = revenue;
+        net = revenue - expenses;   // Net Profit = income − expenses
+        profit = net;
         employees = emps.length;
       } else if(bizId === 'blocks'){
-        // Blocks: profit = sum of (total − material cost) per order
+        // Blocks: profit per order = total − batch cost; net = profit − expenses
         records = sales.length;
+        const prods = doc.productions || [];
+        const purchases = doc.rawPurchases || [];
+        // average per-block material cost (fallback for old sales without stored cost)
+        const rawUnit = (itemId) => {
+          const ps = purchases.filter(p => p.itemId === itemId);
+          const q = ps.reduce((s,p)=>s+(+p.qty||0),0);
+          const v = ps.reduce((s,p)=>s+(+p.price||0),0);
+          return q>0 ? v/q : 0;
+        };
+        const totProduced = prods.reduce((s,p)=>s+(+p.qty||0),0);
+        const totMatCost = prods.reduce((s,p)=> s + (p.materials||[]).reduce((ss,m)=>ss+(+m.qty||0)*rawUnit(m.itemId),0), 0);
+        const avgBlockCost = totProduced>0 ? totMatCost/totProduced : 0;
+        let grossProfit = 0;
         sales.forEach(s => {
           const total = (+s.qty||0) * (+s.rate||0);
-          if(inAdminPeriod(s.date)) revenue += (+s.paid || 0);
+          if(inAdminPeriod(s.date)){
+            revenue += (+s.paid || 0);
+            const cost = (s.cost !== undefined && s.cost !== null) ? (+s.cost) : (+s.qty||0) * avgBlockCost;
+            grossProfit += (+s.total || 0) - cost;
+          }
           pending += Math.max(0, total - (+s.paid||0));
         });
+        (doc.expenses || []).forEach(e => { if(inAdminPeriod(e.date)) expenses += (+e.amount || 0); });
         outstanding = pending;
-        // Block profit needs production cost data which lives in the blocks doc
-        profit = revenue;  // approx for admin card; detailed profit shown inside Blocks dashboard
+        net = grossProfit - expenses;   // Net Profit = order profit − expenses
+        profit = net;
         employees = emps.length;
       } else {
-        // Snooker (basement/floor1): revenue = cash + online + recovered credit
+        // Snooker (basement/floor1): revenue = cash + online from daily sales
         records = sales.length;
-        let creditSales = 0;
         sales.forEach(s => {
           if(inAdminPeriod(s.date)){ revenue += (+s.cash || 0) + (+s.online || 0); }
-          creditSales += (+s.credit || 0);
         });
-        // Credit recovered (within period) counts as revenue
-        let recovered = 0;
+        // Credit customers use entries[] with type credit / recovery / discount
+        let creditGiven = 0, recovered = 0, discounted = 0;
         (doc.customers || []).forEach(c => {
-          (c.payments || []).forEach(p => {
-            recovered += (+p.amount || 0);
-            if(inAdminPeriod(p.date)) revenue += (+p.amount || 0);
+          (c.entries || []).forEach(e => {
+            const amt = +e.amount || 0;
+            if(e.type === 'credit') creditGiven += amt;
+            else if(e.type === 'recovery'){
+              recovered += amt;
+              if(inAdminPeriod(e.date)) revenue += amt;  // recovered credit (in period) = real cash in
+            } else if(e.type === 'discount') discounted += amt;
           });
         });
         // Period expenses
         (doc.expenses || []).forEach(e => { if(inAdminPeriod(e.date)) expenses += (+e.amount || 0); });
-        // Outstanding = all credit sales − all recoveries (running balance, full total)
-        outstanding = Math.max(0, creditSales - recovered);
+        // Outstanding = total credit − recovered − discount (full running balance)
+        outstanding = Math.max(0, creditGiven - recovered - discounted);
         pending = outstanding;
         profit = revenue - expenses;  // Snooker profit = revenue − expenses
+        net = profit;
         employees = emps.length;
       }
-      return { revenue, records, pending, clients, employees, expenses, profit, outstanding };
+      return { revenue, records, pending, clients, employees, expenses, profit, outstanding, net };
     } catch(e){
       console.error('getBizStats error for', bizId, e);
-      return { revenue:0, records:0, pending:0, clients:0, employees:0, profit:0, outstanding:0 };
+      return { revenue:0, records:0, pending:0, clients:0, employees:0, profit:0, outstanding:0, net:0 };
     }
   }
 
@@ -1230,32 +1256,32 @@
     for(const id of ids){
       const s = await getBizStats(id);
       statsMap[id] = s;
-      totalRev += s.revenue;
+      totalRev += s.net;
       totalPending += s.pending;
       totalClients += s.clients;
       totalEmps += s.employees;
     }
 
     // Top header totals
-    document.getElementById('totalRevenue').textContent = '₨' + totalRev.toLocaleString();
+    document.getElementById('totalRevenue').textContent = '₨' + Math.round(totalRev).toLocaleString();
     const revLabel = document.querySelector('#totalRevenue + .stat-label');
-    if(revLabel) revLabel.textContent = 'Total Revenue (' + getAdminPeriod().label + ')';
+    if(revLabel) revLabel.textContent = 'Total Net Profit (' + getAdminPeriod().label + ')';
     document.getElementById('totalEmployees').textContent = totalEmps;
     document.getElementById('totalClients').textContent = totalClients;
     document.getElementById('totalPending').textContent = '₨' + totalPending.toLocaleString();
 
     // ─── Hardcoded business cards on home dashboard ───
-    // Visa: Clients + Revenue
+    // Visa: Clients + Net Profit
     const elVisaC = document.getElementById('visaClients');
     const elVisaR = document.getElementById('visaRev');
     if(elVisaC) elVisaC.textContent = statsMap.visa.clients;
-    if(elVisaR) elVisaR.textContent = '₨' + statsMap.visa.revenue.toLocaleString();
+    if(elVisaR) elVisaR.textContent = '₨' + Math.round(statsMap.visa.net).toLocaleString();
 
-    // Blocks: Stock + Revenue (stock = records for now)
+    // Blocks: Stock + Net Profit
     const elBlocksS = document.getElementById('blocksStock');
     const elBlocksR = document.getElementById('blocksRev');
     if(elBlocksS) elBlocksS.textContent = statsMap.blocks.records;
-    if(elBlocksR) elBlocksR.textContent = '₨' + statsMap.blocks.revenue.toLocaleString();
+    if(elBlocksR) elBlocksR.textContent = '₨' + Math.round(statsMap.blocks.net).toLocaleString();
 
     // Basement: Profit + Credit (outstanding)
     const elBaseS = document.getElementById('basementSale');

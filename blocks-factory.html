@@ -242,7 +242,7 @@
       <div class="table-responsive">
         <table class="t">
           <thead>
-            <tr><th>Date</th><th>Block Type</th><th>Quantity</th><th>Materials Used</th><th>Action</th></tr>
+            <tr><th>Batch #</th><th>Date</th><th>Block Type</th><th>Quantity</th><th>Materials Used</th><th>Per Block Cost</th><th>Remaining</th><th>Action</th></tr>
           </thead>
           <tbody id="prodTable"></tbody>
         </table>
@@ -570,9 +570,15 @@
           <div class="col-md-6"><label class="form-label">Address</label><input type="text" class="form-control" id="saleCustAddr"/></div>
         </div>
         <div class="row g-3 mb-3">
-          <div class="col-md-4"><label class="form-label">Block Type *</label><select class="form-select" id="saleBlock" onchange="setSaleRate()"></select></div>
-          <div class="col-md-4"><label class="form-label">Quantity *</label><input type="number" class="form-control" id="saleQty" oninput="calcSaleTotal()"/></div>
-          <div class="col-md-4"><label class="form-label">Rate per Unit *</label><input type="number" class="form-control" id="saleRate" oninput="calcSaleTotal()"/></div>
+          <div class="col-md-6"><label class="form-label">Block Type *</label><select class="form-select" id="saleBlock" onchange="onSaleBlockChange()"></select></div>
+          <div class="col-md-6"><label class="form-label">Rate per Unit *</label><input type="number" class="form-control" id="saleRate" oninput="calcSaleTotal()"/></div>
+          <div class="col-12">
+            <label class="form-label">Production Batches * <span style="color:#94a3b8;font-weight:400">(kis batch se kitne block — multiple add kar sakte ho)</span></label>
+            <div id="saleBatchRows"></div>
+            <button type="button" class="btn-out" style="padding:5px 12px;font-size:.85rem" onclick="addBatchRow()"><i class="bi bi-plus-lg me-1"></i> Add Batch</button>
+            <div id="saleQtyInfo" style="font-size:.82rem;color:#64748b;margin-top:8px"></div>
+          </div>
+          <input type="hidden" id="saleQty"/>
           <div class="col-md-4"><label class="form-label">Subtotal</label><input type="number" class="form-control" id="saleSubtotal" readonly style="background:#f1f5f9"/></div>
           <div class="col-md-4"><label class="form-label">Discount <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
             <div class="input-group">
@@ -1006,7 +1012,49 @@
     return DB.get('rawItems', []).reduce((s,i) => s + rawItemValue(i.id), 0);
   }
 
-  // Material cost per block for a block type (from its productions)
+  // ═════════ BATCH HELPERS ═════════
+  // Stable batch number from chronological order (oldest = #1)
+  function batchNoMap(){
+    const prods = DB.get('productions', []).slice().sort((a,b) =>
+      (a.date||'').localeCompare(b.date||'') || (a.id||'').localeCompare(b.id||''));
+    const map = {};
+    prods.forEach((p,i) => map[p.id] = i+1);
+    return map;
+  }
+  function getBatchNo(prodId){ return batchNoMap()[prodId] || '?'; }
+  // Total material cost of a batch
+  function batchTotalCost(prod){
+    return (prod.materials||[]).reduce((s,m) => s + (m.qty||0) * rawUnitCost(m.itemId), 0);
+  }
+  // Per-block cost of a batch
+  function batchPerBlockCost(prod){
+    return (prod.qty||0) > 0 ? batchTotalCost(prod) / prod.qty : 0;
+  }
+  // Blocks already sold from a batch (across all sales' allocations)
+  function batchSold(prodId){
+    return DB.get('sales', []).reduce((s,sale) =>
+      s + (sale.allocations||[]).filter(a => a.batchId === prodId).reduce((ss,a) => ss + (a.qty||0), 0), 0);
+  }
+  // Remaining blocks in a batch
+  function batchRemaining(prodId){
+    const p = DB.get('productions', []).find(x => x.id === prodId);
+    return p ? (p.qty||0) - batchSold(prodId) : 0;
+  }
+  // Batch <option> list for a block type (only batches with stock left)
+  function batchOptionsHTML(blockId, selectedId){
+    const noMap = batchNoMap();
+    const prods = DB.get('productions', []).filter(p => p.blockId === blockId);
+    const opts = prods.map(p => {
+      const rem = (p.qty||0) - batchSold(p.id);
+      const cost = Math.round(batchPerBlockCost(p)*100)/100;
+      if(rem <= 0 && p.id !== selectedId) return '';
+      const sel = p.id === selectedId ? 'selected' : '';
+      return `<option value="${p.id}" data-cost="${cost}" data-rem="${rem}" ${sel}>Batch #${noMap[p.id]} — ₨${cost}/block (${rem} left)</option>`;
+    }).filter(Boolean).join('');
+    return `<option value="">-- Select Batch --</option>` + opts;
+  }
+
+  // Material cost per block for a block type (avg, fallback for old sales)
   function blockMaterialCost(blockId){
     const prods = DB.get('productions', []).filter(p => p.blockId === blockId);
     const producedQty = prods.reduce((s,p) => s + (p.qty||0), 0);
@@ -1265,20 +1313,27 @@
     const items = DB.get('rawItems', []);
     const tbody = document.getElementById('prodTable');
     if(productions.length === 0){
-      tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><i class="bi bi-gear"></i><p>No records yet</p></div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><i class="bi bi-gear"></i><p>No records yet</p></div></td></tr>`;
       return;
     }
+    const noMap = batchNoMap();
     tbody.innerHTML = productions.map(p => {
       const block = types.find(t => t.id === p.blockId);
       const matText = (p.materials || []).map(m => {
         const it = items.find(i => i.id === m.itemId);
         return it ? `${it.name}: ${m.qty} ${it.unit}` : '';
       }).filter(Boolean).join(', ');
+      const totalCost = (p.materials || []).reduce((s,m) => s + (m.qty||0) * rawUnitCost(m.itemId), 0);
+      const perBlock = (p.qty||0) > 0 ? totalCost / p.qty : 0;
+      const rem = (p.qty||0) - batchSold(p.id);
       return `<tr>
+        <td><strong style="color:#d97706">#${noMap[p.id]}</strong></td>
         <td>${fmtDate(p.date)}</td>
         <td><strong>${block?.name || 'Unknown'}</strong></td>
         <td style="font-weight:700;color:#d97706">${fmtN(p.qty)}</td>
         <td style="font-size:.78rem;color:#64748b">${matText || '—'}</td>
+        <td style="font-weight:700;color:#7c3aed">${fmt(Math.round(perBlock*100)/100)}<br><small style="color:#94a3b8;font-weight:400">Total: ${fmt(Math.round(totalCost))}</small></td>
+        <td style="font-weight:700;color:${rem>0?'#10b981':'#94a3b8'}">${fmtN(rem)}</td>
         <td><button class="btn-icon danger" onclick="deleteProduction('${p.id}')"><i class="bi bi-trash"></i></button></td>
       </tr>`;
     }).join('');
@@ -1288,48 +1343,92 @@
   function openSaleModal(){
     const types = DB.get('blockTypes', []);
     if(types.length === 0){ toast('Pehle block types add karein','error'); return; }
-    ['saleCust','saleCustPhone','saleCustAddr','saleQty','saleRate','saleSubtotal','saleTotal','saleNote'].forEach(id => document.getElementById(id).value = '');
+    ['saleCust','saleCustPhone','saleCustAddr','saleRate','saleSubtotal','saleTotal','saleNote','saleQty'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('salePaid').value = 0;
     document.getElementById('saleDiscount').value = 0;
     document.getElementById('saleDiscountType').value = 'amount';
     document.getElementById('saleDate').value = todayStr();
     document.getElementById('saleBlock').innerHTML = types.map(t => `<option value="${t.id}" data-rate="${t.rate}">${t.name} (Stock: ${getBlockStock(t.id).available})</option>`).join('');
-    setSaleRate();
+    document.getElementById('saleBatchRows').innerHTML = '';
+    onSaleBlockChange();
+    addBatchRow();
   }
 
-  function setSaleRate(){
+  function onSaleBlockChange(){
     const sel = document.getElementById('saleBlock');
     const rate = sel.options[sel.selectedIndex]?.dataset.rate || 0;
     document.getElementById('saleRate').value = rate;
+    // Rebuild all existing batch rows for the new block type
+    const blockId = sel.value;
+    document.querySelectorAll('#saleBatchRows .batch-sel').forEach(s => {
+      s.innerHTML = batchOptionsHTML(blockId, '');
+    });
     calcSaleTotal();
   }
 
+  function addBatchRow(){
+    const blockId = document.getElementById('saleBlock').value;
+    const div = document.createElement('div');
+    div.className = 'batch-row';
+    div.style = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+    div.innerHTML = `
+      <select class="form-select batch-sel" onchange="calcSaleTotal()">${batchOptionsHTML(blockId, '')}</select>
+      <input type="number" class="form-control batch-qty" placeholder="Qty" style="max-width:130px" oninput="calcSaleTotal()"/>
+      <button type="button" class="btn-icon danger" onclick="this.closest('.batch-row').remove();calcSaleTotal()"><i class="bi bi-x"></i></button>`;
+    document.getElementById('saleBatchRows').appendChild(div);
+  }
+
+  // Read batch allocations from the modal rows
+  function readAllocations(){
+    const allocs = [];
+    document.querySelectorAll('#saleBatchRows .batch-row').forEach(row => {
+      const sel = row.querySelector('.batch-sel');
+      const batchId = sel.value;
+      const qty = parseFloat(row.querySelector('.batch-qty').value) || 0;
+      const opt = sel.options[sel.selectedIndex];
+      const cost = parseFloat(opt?.dataset.cost) || 0;
+      const rem = parseFloat(opt?.dataset.rem) || 0;
+      if(batchId && qty > 0) allocs.push({ batchId, qty, cost, rem, no: opt?.textContent || '' });
+    });
+    return allocs;
+  }
+
   function calcSaleTotal(){
-    const q = parseFloat(document.getElementById('saleQty').value) || 0;
     const r = parseFloat(document.getElementById('saleRate').value) || 0;
-    const subtotal = q * r;
+    const allocs = readAllocations();
+    const totalQty = allocs.reduce((s,a) => s + a.qty, 0);
+    const totalCost = allocs.reduce((s,a) => s + a.qty * a.cost, 0);
+    document.getElementById('saleQty').value = totalQty;
+    const subtotal = totalQty * r;
     let disc = parseFloat(document.getElementById('saleDiscount').value) || 0;
     const dType = document.getElementById('saleDiscountType').value;
     let discAmt = dType === 'percent' ? subtotal * disc / 100 : disc;
     if(discAmt < 0) discAmt = 0;
     if(discAmt > subtotal) discAmt = subtotal;
+    const total = Math.round((subtotal - discAmt) * 100) / 100;
     document.getElementById('saleSubtotal').value = subtotal;
-    document.getElementById('saleTotal').value = Math.round((subtotal - discAmt) * 100) / 100;
+    document.getElementById('saleTotal').value = total;
+    const profit = Math.round((total - totalCost) * 100) / 100;
+    document.getElementById('saleQtyInfo').innerHTML =
+      `Total: <strong>${fmtN(totalQty)} blocks</strong> &nbsp;|&nbsp; Material cost: <strong style="color:#7c3aed">${fmt(Math.round(totalCost))}</strong> &nbsp;|&nbsp; Profit: <strong style="color:${profit>=0?'#2563eb':'#ef4444'}">${fmt(profit)}</strong>`;
   }
 
   function saveSale(){
     const cust = document.getElementById('saleCust').value.trim();
-    const qty = parseFloat(document.getElementById('saleQty').value) || 0;
     const rate = parseFloat(document.getElementById('saleRate').value) || 0;
-    if(!cust || qty <= 0 || rate <= 0){ toast('Customer, qty, rate zaruri hain','error'); return; }
-
     const blockId = document.getElementById('saleBlock').value;
-    const stock = getBlockStock(blockId);
-    if(qty > stock.available){
-      if(!confirm(`Available stock sirf ${stock.available} hai. Phir bhi save karein?`)) return;
+    const allocs = readAllocations();
+    const qty = allocs.reduce((s,a) => s + a.qty, 0);
+    if(!cust || qty <= 0 || rate <= 0){ toast('Customer, batch+qty, rate zaruri hain','error'); return; }
+
+    // Validate each batch allocation against remaining stock
+    for(const a of allocs){
+      if(a.qty > a.rem){
+        if(!confirm(`Batch me sirf ${a.rem} block bache hain (aap ${a.qty} maang rahe ho). Phir bhi save karein?`)) return;
+      }
     }
 
-    const sales = DB.get('sales', []);
+    const totalCost = Math.round(allocs.reduce((s,a) => s + a.qty * a.cost, 0) * 100) / 100;
     const subtotal = qty * rate;
     let disc = parseFloat(document.getElementById('saleDiscount').value) || 0;
     const dType = document.getElementById('saleDiscountType').value;
@@ -1338,6 +1437,8 @@
     if(discAmt > subtotal) discAmt = subtotal;
     const total = Math.round((subtotal - discAmt) * 100) / 100;
     const paid = parseFloat(document.getElementById('salePaid').value) || 0;
+
+    const sales = DB.get('sales', []);
     sales.push({
       id: 'SL'+Date.now(),
       date: document.getElementById('saleDate').value || todayStr(),
@@ -1353,13 +1454,15 @@
       discountAmt: Math.round(discAmt * 100) / 100,
       total,
       paid,
+      cost: totalCost,
+      allocations: allocs.map(a => ({ batchId: a.batchId, qty: a.qty, cost: a.cost })),
       payMode: document.getElementById('salePayMode').value,
       note: document.getElementById('saleNote').value.trim()
     });
     DB.set('sales', sales);
     bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide();
     renderSales();
-    toast('Sale add ho gayi (stock auto-update)');
+    toast('Sale add ho gayi (batch + stock auto-update)');
   }
 
   function deleteSale(id){
@@ -1370,9 +1473,10 @@
     renderSales();
   }
 
-  // Per-order profit = total (after discount) − material cost of blocks sold
+  // Per-order profit = total (after discount) − batch material cost
   function orderProfit(s){
-    const cost = (s.qty||0) * blockMaterialCost(s.blockId);
+    // Use stored batch cost if available; else fallback to average block cost
+    const cost = (s.cost !== undefined && s.cost !== null) ? s.cost : (s.qty||0) * blockMaterialCost(s.blockId);
     return Math.round(((s.total||0) - cost) * 100) / 100;
   }
 
@@ -1384,6 +1488,7 @@
       tbody.innerHTML = `<tr><td colspan="12"><div class="empty"><i class="bi bi-cart"></i><p>Abhi koi sale nahi</p></div></td></tr>`;
       return;
     }
+    const noMap = batchNoMap();
     tbody.innerHTML = sales.map(s => {
       const block = types.find(t => t.id === s.blockId);
       const remaining = s.total - s.paid;
@@ -1391,10 +1496,13 @@
       const discAmt = s.discountAmt || 0;
       const discTxt = discAmt > 0 ? (s.discountType === 'percent' ? `${fmt(discAmt)} (${s.discount}%)` : fmt(discAmt)) : '—';
       const profit = orderProfit(s);
+      const batchTxt = (s.allocations||[]).length
+        ? `<br><small style="color:#94a3b8">${s.allocations.map(a => `B#${noMap[a.batchId]||'?'}×${a.qty}`).join(', ')}</small>`
+        : '';
       return `<tr>
         <td>${fmtDate(s.date)}</td>
         <td><strong>${s.cust}</strong>${s.custPhone?`<br><small style="color:#94a3b8">${s.custPhone}</small>`:''}</td>
-        <td>${block?.name || '—'}</td>
+        <td>${block?.name || '—'}${batchTxt}</td>
         <td>${fmtN(s.qty)}</td>
         <td>${fmt(s.rate)}</td>
         <td style="font-weight:700">${fmt(s.total)}</td>
